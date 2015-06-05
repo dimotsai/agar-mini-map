@@ -9,7 +9,7 @@ A mini map which is able to show your location on agar.io
 2. Install agar-mini-map
     1. Open Tampermonkey Dashboard
     2. Click Utilities
-    3. Import the script from `https://raw.githubusercontent.com/dimotsai/agar-mini-map/master/agar-mini-map.js`
+    3. Import from URL `https://raw.githubusercontent.com/dimotsai/agar-mini-map/master/agar-mini-map.js`
 
 ### For other platforms
 

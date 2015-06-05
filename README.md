@@ -1,5 +1,5 @@
 # agar-mini-map
-A mini map which is able to show your location on agar.io
+A mini map which is able to show your location on http://agar.io/
 
 ## Installation
 

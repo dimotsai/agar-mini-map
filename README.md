@@ -21,3 +21,7 @@ Note: If you are taking this approach, you might have to re-select server to mak
 ## Screenshots
 
 ![screenshot_1](http://i.imgur.com/FgujOgA.png)
+
+## Related projects
+
+* [iamgyz/Agar-server-selection](https://github.com/iamgyz/Agar-server-selection)

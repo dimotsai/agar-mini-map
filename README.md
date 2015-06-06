@@ -11,6 +11,7 @@ The user script managers will automatically load agar-mini-map for you.
     * Chrome, Chromium: [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
     * Firefox: [greasemonkey](https://addons.mozilla.org/zh-TW/firefox/addon/greasemonkey/)
     * Opera: [Tampermonkey](https://addons.opera.com/zh-tw/extensions/details/tampermonkey-beta/?display=en)
+    * Safari: [Tampermonkey](https://tampermonkey.net)
 2. Install agar-mini-map
     1. Go to https://greasyfork.org/en/scripts/10286-agar-mini-map
     2. Click `Install this script`

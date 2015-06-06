@@ -1,4 +1,4 @@
-# agar-mini-map
+# [agar-mini-map](https://github.com/dimotsai/agar-mini-map)
 A mini map which is able to show your location on http://agar.io/
 
 ## Installation
@@ -21,6 +21,10 @@ Note: If you are taking this approach, you might have to re-select server to mak
 ## Screenshots
 
 ![screenshot_1](http://i.imgur.com/FgujOgA.png)
+
+## Issues
+
+* https://github.com/dimotsai/agar-mini-map/issues
 
 ## Related projects
 

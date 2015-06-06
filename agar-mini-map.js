@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         agar-mini-map
 // @namespace    http://github.com/dimotsai/
-// @version      0.1
+// @version      0.2
 // @description  This script will show a mini map and your location on agar.io
 // @author       dimotsai
 // @match        http://agar.io/
 // @grant        none
-// @run-at       document-end
+// @run-at       document-body
 // ==/UserScript==
 
 (function() {
@@ -150,7 +150,7 @@
                 {
                     miniMapRegisterToken(
                         this.id,
-                        miniMapCreateToken(this.id, this.color) 
+                        miniMapCreateToken(this.id, this.color)
                     );
                 }
                 miniMapUpdateToken(this.id, this.nx, this.ny);
@@ -182,11 +182,11 @@
 
         // destroy foods? (or cells?)
         for (var d = data.getUint16(c, true), c = c + 2, e = 0; e < d; ++e) {
-            var p = cells[data.getUint32(c, true)], 
-                f = cells[data.getUint32(c + 4, true)], 
+            var p = cells[data.getUint32(c, true)],
+                f = cells[data.getUint32(c + 4, true)],
                 c = c + 8;
             p && f && (
-                f.destroy(), 
+                f.destroy(),
                 f.ox = f.x,
                 f.oy = f.y,
                 f.oSize = f.size,
@@ -203,18 +203,18 @@
             if (0 == d)
                 break;
             ++e;
-            var g, 
-                p = data.getInt16(c, true), 
-                c = c + 2, 
-                f = data.getInt16(c, true), 
+            var g,
+                p = data.getInt16(c, true),
+                c = c + 2,
+                f = data.getInt16(c, true),
                 c = c + 2;
             g = data.getInt16(c, true);
             for (var c = c + 2, h = data.getUint8(c++), m = data.getUint8(c++), q = data.getUint8(c++), h = (h << 16 | m << 8 | q).toString(16); 6 > h.length; )
                 h = "0" + h;
 
-            var h = "#" + h, 
-                k = data.getUint8(c++), 
-                m = !!(k & 1), 
+            var h = "#" + h,
+                k = data.getUint8(c++),
+                m = !!(k & 1),
                 q = !!(k & 16);
 
             k & 2 && (c += 4);
@@ -233,14 +233,14 @@
             k = null;
 
             // if d in cells then modify it, otherwise create a new cell
-            cells.hasOwnProperty(d) 
-                ? (k = cells[d], k.updatePos(), 
-                   k.ox = k.x, 
-                   k.oy = k.y, 
-                   k.oSize = k.size, 
-                   k.color = h) 
-                : (k = new Cell(d, p, f, g, h, n), 
-                   k.pX = p, 
+            cells.hasOwnProperty(d)
+                ? (k = cells[d], k.updatePos(),
+                   k.ox = k.x,
+                   k.oy = k.y,
+                   k.oSize = k.size,
+                   k.color = h)
+                : (k = new Cell(d, p, f, g, h, n),
+                   k.pX = p,
                    k.pY = f);
 
             k.isVirus = m;
@@ -257,8 +257,8 @@
         b = data.getUint32(c, true);
         c += 4;
         for (e = 0; e < b; e++)
-            d = data.getUint32(c, true), 
-            c += 4, k = cells[d], 
+            d = data.getUint32(c, true),
+            c += 4, k = cells[d],
             null != k && k.destroy();
     }
 
@@ -271,12 +271,10 @@
                 break;
             case 20: // cleanup ids
                 my_cell_ids = [];
-                console.log(my_cell_ids);
                 break;
             case 32: // cell id belongs me
                 var id = data.getUint32(1, true);
                 my_cell_ids.push(data.getUint32(1, true));
-                console.log(my_cell_ids);
                 break;
         }
     };
@@ -323,8 +321,6 @@
         ws.onerror = function(event) {
             return this.onerror.call(ws, event);
         }.bind(this);
-
-        console.log(this);
     };
 
     window.WebSocket.prototype = _WebSocket;

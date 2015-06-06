@@ -3,18 +3,24 @@ A mini map which is able to show your location on http://agar.io/
 
 ## Installation
 
-### For chrome (automatically loaded)
+### Install for user script managers
 
-1. Install [Tampermonkey](http://tampermonkey.net/)
+The user script managers will automatically load agar-mini-map for you.
+
+1. Install the user script manager
+    * Chrome, Chromium: [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
+    * Firefox: [greasemonkey](https://addons.mozilla.org/zh-TW/firefox/addon/greasemonkey/)
+    * Opera: [Tampermonkey](https://addons.opera.com/zh-tw/extensions/details/tampermonkey-beta/?display=en)
 2. Install agar-mini-map
-    1. Open Tampermonkey Dashboard
-    2. Click Utilities
-    3. Import from URL `https://raw.githubusercontent.com/dimotsai/agar-mini-map/master/agar-mini-map.js`
+    1. Go to https://greasyfork.org/en/scripts/10286-agar-mini-map
+    2. Click `Install this script`
 
-### For other platforms
 
-1. Simply open JavaScript Console
-2. Enter the content of [agar-mini-map.js](https://raw.githubusercontent.com/dimotsai/agar-mini-map/master/agar-mini-map.js) into console
+
+### Manually install for other browsers
+
+1. Simply open up JavaScript Console
+2. Enter the code in [agar-mini-map.js](https://raw.githubusercontent.com/dimotsai/agar-mini-map/master/agar-mini-map.js) into console
 
 Note: If you are taking this approach, you might have to re-select server to make it work.
 

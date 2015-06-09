@@ -4,6 +4,7 @@
 // @version      0.21
 // @description  This script will show a mini map and your location on agar.io
 // @author       dimotsai
+// @license      MIT
 // @match        http://agar.io/
 // @grant        none
 // @run-at       document-body

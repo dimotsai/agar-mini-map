@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         agar-mini-map
 // @namespace    http://github.com/dimotsai/
-// @version      0.2
+// @version      0.21
 // @description  This script will show a mini map and your location on agar.io
 // @author       dimotsai
 // @match        http://agar.io/
@@ -175,13 +175,15 @@
     };
 
     // extract a websocket packet which contains the information of cells
-    function extractCellPacket(data) {
-        I = +new Date;
-        var b = Math.random(), c = 1;
-        qa = false;
+    function extractCellPacket(data, offset) {
+        var I = +new Date;
+        var qa = false;
+        var b = Math.random(), c = offset;
+        var size = data.getUint16(c, true);
+        c = c + 2;
 
         // destroy foods? (or cells?)
-        for (var d = data.getUint16(c, true), c = c + 2, e = 0; e < d; ++e) {
+        for (var e = 0; e < size; ++e) {
             var p = cells[data.getUint32(c, true)],
                 f = cells[data.getUint32(c + 4, true)],
                 c = c + 8;
@@ -198,18 +200,19 @@
 
         // update or create cells (player)
         for (e = 0; ; ) {
-            d = data.getUint32(c, true);
+            var d = data.getUint32(c, true);
             c += 4;
-            if (0 == d)
+            if (0 == d) {
                 break;
+            }
             ++e;
-            var g,
-                p = data.getInt16(c, true),
+            var p = data.getInt16(c, true),
                 c = c + 2,
                 f = data.getInt16(c, true),
                 c = c + 2;
-            g = data.getInt16(c, true);
-            for (var c = c + 2, h = data.getUint8(c++), m = data.getUint8(c++), q = data.getUint8(c++), h = (h << 16 | m << 8 | q).toString(16); 6 > h.length; )
+                g = data.getInt16(c, true);
+                c = c + 2;
+            for (var h = data.getUint8(c++), m = data.getUint8(c++), q = data.getUint8(c++), h = (h << 16 | m << 8 | q).toString(16); 6 > h.length; )
                 h = "0" + h;
 
             var h = "#" + h,
@@ -264,26 +267,28 @@
 
     // extract the type of packet and dispatch it to a corresponding extractor
     function extractPacket(event) {
+        var c = 0;
         var data = new DataView(event.data);
-        switch (data.getUint8(0)) {
+        240 == data.getUint8(c) && (c += 5);
+        switch (data.getUint8(c++)) {
             case 16: // cells data
-                extractCellPacket(data);
+                extractCellPacket(data, c);
                 break;
             case 20: // cleanup ids
                 my_cell_ids = [];
                 break;
             case 32: // cell id belongs me
-                var id = data.getUint32(1, true);
-                my_cell_ids.push(data.getUint32(1, true));
+                var id = data.getUint32(c, true);
+                my_cell_ids.push(id);
                 break;
         }
     };
 
     // the injected point, overwriting the WebSocket constructor
-    window.WebSocket = function(url) {
+    window.WebSocket = function(url, protocols) {
         console.log('Listen');
 
-        var ws = new _WebSocket(url);
+        var ws = new _WebSocket(url, protocols);
 
         refer(this, ws, 'binaryType');
         refer(this, ws, 'bufferedAmount');

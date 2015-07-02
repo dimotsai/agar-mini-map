@@ -19,8 +19,29 @@
 
     var options = {
         enableMultiCells: true,
-        enablePosition: false
+        enablePosition: true,
     };
+
+    function miniMapRender() {
+        var canvas = window.mini_map;
+        var ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (var id in window.mini_map_tokens) {
+            var token = window.mini_map_tokens[id];
+            ctx.beginPath();
+            ctx.arc(
+                token.x * canvas.width,
+                token.y * canvas.height,
+                token.size * canvas.width,
+                0,
+                2 * Math.PI,
+                false
+            );
+            ctx.closePath();
+            ctx.fillStyle = token.color;
+            ctx.fill();
+        };
+    }
 
     function miniMapCreateToken(id, color) {
         var mini_map_token = {
@@ -43,18 +64,6 @@
     function miniMapUnregisterToken(id) {
         if (window.mini_map_tokens[id] !== undefined) {
             // window.mini_map_tokens[id].detach();
-            var x = window.mini_map_tokens[id].x;
-            var y = window.mini_map_tokens[id].y;
-            var size = window.mini_map_tokens[id].size;
-            var canvas = window.mini_map;
-            var ctx = canvas.getContext('2d');
-
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.beginPath();
-            ctx.arc(x * canvas.width , y * canvas.height, size * canvas.width, 0 ,2 * Math.PI, false);
-            ctx.closePath();
-            ctx.fillStyle = window.mini_map_tokens[id].color;
-            ctx.fill();
             delete window.mini_map_tokens[id];
         }
     }
@@ -66,48 +75,9 @@
     function miniMapUpdateToken(id, x, y, size) {
         if (window.mini_map_tokens[id] !== undefined) {
 
-            var draw = function(clear) {
-
-                var canvas = window.mini_map;
-                var ctx = canvas.getContext('2d');
-
-                if (clear) {
-                    ctx.globalCompositeOperation = 'destination-out';
-                } else {
-                    ctx.globalCompositeOperation = 'source-over';
-                }
-                ctx.lineWidth = 0;
-                ctx.beginPath();
-                ctx.arc(
-                    window.mini_map_tokens[id].x * canvas.width,
-                    window.mini_map_tokens[id].y * canvas.height, 
-                    window.mini_map_tokens[id].size * canvas.width, 
-                    0,
-                    2 * Math.PI,
-                    false
-                );
-                ctx.closePath();
-                ctx.fillStyle = window.mini_map_tokens[id].color;
-                ctx.fill();
-            }
-
-            draw(true);
-
             window.mini_map_tokens[id].x = x;
             window.mini_map_tokens[id].y = y;
             window.mini_map_tokens[id].size = size;
-
-            draw(false);
-
-
-
-            // window.mini_map_tokens[id]
-            // .css({
-            //     left:   x    * 100 + '%',
-            //     top:    y    * 100 + '%',
-            //     width:  size * 100 + '%',
-            //     height: size * 100 + '%'
-            // });
 
             return true;
         } else {
@@ -147,6 +117,8 @@
 
             window.mini_map = mini_map[0];
         }
+
+        setInterval(miniMapRender, 1000 / 30);
 
         if ($('#mini-map-pos').length === 0) {
             window.mini_map_pos = $('<div>').attr('id', 'mini-map-pos').css({
@@ -219,7 +191,7 @@
                     );
                 }
 
-                var size_n = this.nSize/7000;
+                var size_n = this.nSize/14000;
                 miniMapUpdateToken(this.id, (this.nx+7000)/14000 - size_n / 2, (this.ny+7000)/14000 - size_n / 2, size_n);
             }
 

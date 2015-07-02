@@ -20,6 +20,7 @@
     var options = {
         enableMultiCells: true,
         enablePosition: true,
+        enableCross: true
     };
 
     function miniMapRender() {
@@ -40,7 +41,24 @@
             ctx.closePath();
             ctx.fillStyle = token.color;
             ctx.fill();
+
+            if (options.enableCross && -1 != my_cell_ids.indexOf(token.id))
+                miniMapDrawCross(token.x, token.y);
         };
+    }
+
+    function miniMapDrawCross(x, y) {
+        var canvas = window.mini_map;
+        var ctx = canvas.getContext('2d');
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(0, y * canvas.height);
+        ctx.lineTo(canvas.width, y * canvas.height);
+        ctx.moveTo(x * canvas.width, 0);
+        ctx.lineTo(x * canvas.width, canvas.height);
+        ctx.closePath();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.stroke();
     }
 
     function miniMapCreateToken(id, color) {

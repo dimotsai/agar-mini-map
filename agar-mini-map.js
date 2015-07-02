@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         agar-mini-map
 // @namespace    http://github.com/dimotsai/
-// @version      0.24
+// @version      0.30
 // @description  This script will show a mini map and your location on agar.io
 // @author       dimotsai
 // @license      MIT
@@ -24,7 +24,8 @@
             height: '5%',
             background: color,
             top: '0%',
-            left: '0%'
+            left: '0%',
+            borderRadius: '50%'
         });
         return mini_map_token;
     }
@@ -47,9 +48,15 @@
         return window.mini_map_tokens[id] !== undefined;
     }
 
-    function miniMapUpdateToken(id, x, y) {
+    function miniMapUpdateToken(id, x, y, size) {
         if (window.mini_map_tokens[id] !== undefined) {
-            window.mini_map_tokens[id].css('left', ((x+7000) / 14000) * 95 + '%').css('top', ((y+7000) / 14000) * 95 + '%');
+            window.mini_map_tokens[id]
+            .css({
+                left: x * 100 + '%',
+                top: y * 100 + '%',
+                width: size * 100 + '%',
+                height: size * 100 + '%'
+            });
             return true;
         } else {
             return false;
@@ -63,26 +70,14 @@
     function miniMapInit() {
         var $ = window.jQuery;
         window.mini_map_tokens = {};
-        if ($('#mini-map-pos').length === 0) {
-            window.mini_map_pos = $('<div>').attr('id', 'mini-map-pos').css({
-                bottom: 10,
-                right: 10,
-                color: 'white',
-                background: 'rgba(155, 155, 155, 0.6)',
-                fontSize: 25,
-                fontWeight: 800,
-                position: 'fixed',
-                padding: '0px 10px'
-            }).appendTo(document.body);
-        }
 
         if ($('#mini-map-wrapper').length === 0) {
             var wrapper = $('<div>').attr('id', 'mini-map-wrapper').css({
                 position: 'fixed',
-                bottom: '60px',
-                right: '10px',
-                width: '150px',
-                height: '150px',
+                bottom: 10,
+                right: 10,
+                width: 300,
+                height: 300,
                 background: 'rgba(128, 128, 128, 0.58)'
             });
 
@@ -96,6 +91,19 @@
 
             window.mini_map = mini_map;
         }
+
+        if ($('#mini-map-pos').length === 0) {
+            window.mini_map_pos = $('<div>').attr('id', 'mini-map-pos').css({
+                bottom: 10,
+                right: 10,
+                color: 'white',
+                fontSize: 15,
+                fontWeight: 800,
+                position: 'fixed',
+                padding: '0px 10px'
+            }).appendTo(document.body);
+        }
+
     }
 
     // cell constructor
@@ -146,15 +154,20 @@
             this.name = name;
         },
         updatePos: function() {
+
+            if (! miniMapIsRegisteredToken(this.id))
+            {
+                miniMapRegisterToken(
+                    this.id,
+                    miniMapCreateToken(this.id, this.color)
+                );
+            }
+
+            var size_n = this.nSize/7000;
+
+            miniMapUpdateToken(this.id, (this.nx+7000)/14000 - size_n / 2, (this.ny+7000)/14000 - size_n / 2, size_n);
+
             if (-1 != my_cell_ids.indexOf(this.id)) {
-                if (! miniMapIsRegisteredToken(this.id))
-                {
-                    miniMapRegisterToken(
-                        this.id,
-                        miniMapCreateToken(this.id, this.color)
-                    );
-                }
-                miniMapUpdateToken(this.id, this.nx, this.ny);
                 miniMapUpdatePos(this.nx, this.ny);
             }
         }

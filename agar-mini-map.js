@@ -17,6 +17,11 @@
     var cells = [];
     var my_cell_ids = [];
 
+    var options = {
+        enableMultiCells: true,
+        enablePosition: true
+    };
+
     function miniMapCreateToken(id, color) {
         var mini_map_token = $('<div>').attr('id', 'mini-map-token-' + id).css({
             position: 'absolute',
@@ -52,9 +57,9 @@
         if (window.mini_map_tokens[id] !== undefined) {
             window.mini_map_tokens[id]
             .css({
-                left: x * 100 + '%',
-                top: y * 100 + '%',
-                width: size * 100 + '%',
+                left:   x    * 100 + '%',
+                top:    y    * 100 + '%',
+                width:  size * 100 + '%',
                 height: size * 100 + '%'
             });
             return true;
@@ -154,20 +159,20 @@
             this.name = name;
         },
         updatePos: function() {
+            if (options.enableMultiCells || -1 != my_cell_ids.indexOf(this.id)) {
+                if (! miniMapIsRegisteredToken(this.id))
+                {
+                    miniMapRegisterToken(
+                        this.id,
+                        miniMapCreateToken(this.id, this.color)
+                    );
+                }
 
-            if (! miniMapIsRegisteredToken(this.id))
-            {
-                miniMapRegisterToken(
-                    this.id,
-                    miniMapCreateToken(this.id, this.color)
-                );
+                var size_n = this.nSize/7000;
+                miniMapUpdateToken(this.id, (this.nx+7000)/14000 - size_n / 2, (this.ny+7000)/14000 - size_n / 2, size_n);
             }
 
-            var size_n = this.nSize/7000;
-
-            miniMapUpdateToken(this.id, (this.nx+7000)/14000 - size_n / 2, (this.ny+7000)/14000 - size_n / 2, size_n);
-
-            if (-1 != my_cell_ids.indexOf(this.id)) {
+            if (options.enablePosition && -1 != my_cell_ids.indexOf(this.id)) {
                 miniMapUpdatePos(this.nx, this.ny);
             }
         }

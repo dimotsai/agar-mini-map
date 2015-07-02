@@ -19,32 +19,42 @@
 
     var options = {
         enableMultiCells: true,
-        enablePosition: true
+        enablePosition: false
     };
 
     function miniMapCreateToken(id, color) {
-        var mini_map_token = $('<div>').attr('id', 'mini-map-token-' + id).css({
-            position: 'absolute',
-            width: '5%',
-            height: '5%',
-            background: color,
-            top: '0%',
-            left: '0%',
-            borderRadius: '50%'
-        });
+        var mini_map_token = {
+            id: id,
+            color: color,
+            x: 0,
+            y: 0,
+            size: 0
+        };
         return mini_map_token;
     }
 
     function miniMapRegisterToken(id, token) {
         if (window.mini_map_tokens[id] === undefined) {
-            window.mini_map.append(token);
+            // window.mini_map.append(token);
             window.mini_map_tokens[id] = token;
         }
     }
 
     function miniMapUnregisterToken(id) {
         if (window.mini_map_tokens[id] !== undefined) {
-            window.mini_map_tokens[id].detach();
+            // window.mini_map_tokens[id].detach();
+            var x = window.mini_map_tokens[id].x;
+            var y = window.mini_map_tokens[id].y;
+            var size = window.mini_map_tokens[id].size;
+            var canvas = window.mini_map;
+            var ctx = canvas.getContext('2d');
+
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(x * canvas.width , y * canvas.height, size * canvas.width, 0 ,2 * Math.PI, false);
+            ctx.closePath();
+            ctx.fillStyle = window.mini_map_tokens[id].color;
+            ctx.fill();
             delete window.mini_map_tokens[id];
         }
     }
@@ -55,13 +65,50 @@
 
     function miniMapUpdateToken(id, x, y, size) {
         if (window.mini_map_tokens[id] !== undefined) {
-            window.mini_map_tokens[id]
-            .css({
-                left:   x    * 100 + '%',
-                top:    y    * 100 + '%',
-                width:  size * 100 + '%',
-                height: size * 100 + '%'
-            });
+
+            var draw = function(clear) {
+
+                var canvas = window.mini_map;
+                var ctx = canvas.getContext('2d');
+
+                if (clear) {
+                    ctx.globalCompositeOperation = 'destination-out';
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+                ctx.lineWidth = 0;
+                ctx.beginPath();
+                ctx.arc(
+                    window.mini_map_tokens[id].x * canvas.width,
+                    window.mini_map_tokens[id].y * canvas.height, 
+                    window.mini_map_tokens[id].size * canvas.width, 
+                    0,
+                    2 * Math.PI,
+                    false
+                );
+                ctx.closePath();
+                ctx.fillStyle = window.mini_map_tokens[id].color;
+                ctx.fill();
+            }
+
+            draw(true);
+
+            window.mini_map_tokens[id].x = x;
+            window.mini_map_tokens[id].y = y;
+            window.mini_map_tokens[id].size = size;
+
+            draw(false);
+
+
+
+            // window.mini_map_tokens[id]
+            // .css({
+            //     left:   x    * 100 + '%',
+            //     top:    y    * 100 + '%',
+            //     width:  size * 100 + '%',
+            //     height: size * 100 + '%'
+            // });
+
             return true;
         } else {
             return false;
@@ -86,7 +133,11 @@
                 background: 'rgba(128, 128, 128, 0.58)'
             });
 
-            var mini_map = $('<div>').attr('id', 'mini-map').css({
+            var mini_map = $('<canvas>').attr({
+                id: 'mini-map',
+                width: 300,
+                height: 300
+            }).css({
                 width: '100%',
                 height: '100%',
                 position: 'relative'
@@ -94,7 +145,7 @@
 
             wrapper.append(mini_map).appendTo(document.body);
 
-            window.mini_map = mini_map;
+            window.mini_map = mini_map[0];
         }
 
         if ($('#mini-map-pos').length === 0) {

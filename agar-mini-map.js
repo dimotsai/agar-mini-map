@@ -150,6 +150,58 @@
             }).appendTo(document.body);
         }
 
+        if ($('#mini-map-options').length === 0) {
+            window.mini_map_options = $('<div>').attr('id', 'mini-map-options').css({
+                bottom: 315,
+                right: 10,
+                color: '#666',
+                fontSize: 14,
+                position: 'fixed',
+                padding: '0px 10px',
+                fontWeight: 400
+            }).appendTo(document.body);
+
+            var container = $('<div>').hide();
+
+            for (var name in options) {
+
+                var label = $('<label>').css({
+                    display: 'block'
+                });
+
+                var checkbox = $('<input>').attr({
+                    type: 'checkbox'
+                }).prop({
+                    checked: options[name]
+                });
+
+                label.append(checkbox);
+                label.append(' ' + name);
+
+
+                checkbox.click(function(options, name) { return function(evt) {
+                    options[name] = evt.target.checked;
+                    console.log(name, evt.target.checked);
+                }}(options, name));
+
+                label.appendTo(container);
+            }
+
+            container.appendTo(window.mini_map_options);
+
+            $('<a>')
+                .attr('href', '#')
+                .css({
+                    float: 'right',
+                    fontWeight: 800
+                })
+                .text('settings')
+                .click(function() {
+                    container.toggle();
+                    return false;
+                })
+                .appendTo(window.mini_map_options);
+        }
     }
 
     // cell constructor

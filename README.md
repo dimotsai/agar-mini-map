@@ -27,7 +27,12 @@ Note: If you are taking this approach, you might have to re-select server to mak
 
 ## Screenshots
 
-![screenshot_1](http://i.imgur.com/FgujOgA.png)
+### Latest
+![screenshot_2](http://i.imgur.com/35d7m5y.png)
+![screenshot_3](http://i.imgur.com/xUz7xx0.png)
+
+### Old Versions
+(<= v0.24)![screenshot_1](http://i.imgur.com/FgujOgA.png)
 
 ## Issues
 

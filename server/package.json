@@ -1,0 +1,11 @@
+{
+  "name": "mini-map-server",
+  "version": "0.0.1",
+  "description": "A map server that allows you sharing map data",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "dimotsai",
+  "license": "MIT"
+}

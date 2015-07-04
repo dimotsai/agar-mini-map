@@ -4,8 +4,21 @@
   "description": "A map server that allows you sharing map data",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src --out-dir dist",
+    "start": "node dist/server.js",
+    "clean": "rm -rf dist/*",
+    "debug": "babel-node src/server.js",
+    "watch": "babel --watch src --out-dir dist"
   },
   "author": "dimotsai",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "babel": "^5.6.14",
+    "object-assign": "^3.0.0",
+    "ws": "^0.7.2"
+  },
+  "devDependencies": {
+    "debug": "^2.2.0"
+  }
 }

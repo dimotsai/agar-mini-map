@@ -1,18 +1,21 @@
 import { Server as WebSocketServer } from 'ws';
-import Cell from './Cell.js';
 
 var debug = require('debug')('server');
 var port = 34343;
 var wss = new WebSocketServer({ port: port });
 
-var cells = [];
-
 wss.broadcast = function broadcast(data, except = {}) {
+    var to = [];
+
     wss.clients.forEach(function each(client) {
         var key = client._socket.remoteAddress + ':' + client._socket.remotePort;
-        if (except[key] === undefined)
+        if (except[key] === undefined) {
             client.send(data);
+            to.push(key);
+        }
     });
+
+    debug('broadcast', to);
 };
 
 wss.on('connection', function connection(ws) {
@@ -22,7 +25,7 @@ wss.on('connection', function connection(ws) {
         except[key] = ws;
         wss.broadcast(data, except);
 
-        debug('receive', key, Cell.parse(data));
+        debug('receive', key);
     });
 });
 

@@ -8,7 +8,7 @@
     "build": "babel src --out-dir dist",
     "start": "node dist/server.js",
     "clean": "rm -rf dist/*",
-    "debug": "babel-node src/server.js",
+    "debug": "DEBUG=server babel-node src/server.js",
     "watch": "babel --watch src --out-dir dist"
   },
   "author": "dimotsai",

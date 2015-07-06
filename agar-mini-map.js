@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         agar-mini-map
 // @namespace    http://github.com/dimotsai/
-// @version      0.30
+// @version      0.31
 // @description  This script will show a mini map and your location on agar.io
 // @author       dimotsai
 // @license      MIT
@@ -22,6 +22,13 @@
         enablePosition: true,
         enableCross: true
     };
+
+    var start_x = -7000,
+        start_y = -7000,
+        end_x = 7000,
+        end_y = 7000,
+        length_x = 14000,
+        length_y = 14000;
 
     function miniMapRender() {
         var canvas = window.mini_map;
@@ -261,8 +268,8 @@
                     );
                 }
 
-                var size_n = this.nSize/14000;
-                miniMapUpdateToken(this.id, (this.nx+7000)/14000 - size_n / 2, (this.ny+7000)/14000 - size_n / 2, size_n);
+                var size_n = this.nSize/length_x;
+                miniMapUpdateToken(this.id, (this.nx - start_x)/length_x, (this.ny - start_y)/length_y, size_n);
             }
 
             if (options.enablePosition && -1 != my_cell_ids.indexOf(this.id)) {
@@ -393,6 +400,15 @@
                 var id = data.getUint32(c, true);
                 my_cell_ids.push(id);
                 break;
+            case 64: // get borders
+                start_x = data.getFloat64(c, !0), c += 8,
+                start_y = data.getFloat64(c, !0), c += 8,
+                end_x = data.getFloat64(c, !0), c += 8,
+                end_y = data.getFloat64(c, !0), c += 8,
+                center_x = (start_x + end_x) / 2,
+                center_y = (start_y + end_y) / 2,
+                length_x = Math.abs(start_x - end_x),
+                length_y = Math.abs(start_y - end_y);
         }
     };
 

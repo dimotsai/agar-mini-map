@@ -27,6 +27,12 @@ wss.on('connection', function connection(ws) {
 
         debug('receive', key);
     });
+
+    ws.on('close', function close() {
+        console.log(ws._socket.remoteAddress + ':' + ws._socket.remotePort, 'closed');
+    });
+
+    console.log(ws._socket.remoteAddress + ':' + ws._socket.remotePort, 'connected');
 });
 
 console.log('server is now on ws://0.0.0.0:' + port);

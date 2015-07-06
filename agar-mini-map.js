@@ -11,8 +11,9 @@
 // ==/UserScript==
 
 (function() {
-    var _WebSocket = window.WebSocket;
+    var _WebSocket = window._WebSocket = window.WebSocket;
     var $ = window.jQuery;
+    var map_server = null;
 
     var cells = [];
     var my_cell_ids = [];
@@ -29,6 +30,36 @@
         end_y = 7000,
         length_x = 14000,
         length_y = 14000;
+
+    function sendMapData(data, offset) {
+        if (map_server !== null) {
+            map_server.send(data.slice(offset));
+        }
+    }
+
+    function connectToMapServer(address) {
+        var ws = new window._WebSocket(address);
+        ws.binaryType = "arraybuffer";
+
+        ws.onopen = function() {
+             console.log(address + ' connected');
+        }
+
+        ws.onmessage = function(event) {
+            extractCellPacket(new DataView(event.data), 0, true);
+        }
+
+        ws.onerror = function() {
+             console.error('failed to connect to map server');
+        }
+
+        ws.onclose = function() {
+             map_server = null;
+             console.log('map server disconnected');
+        }
+
+        map_server = ws;
+    }
 
     function miniMapRender() {
         var canvas = window.mini_map;
@@ -208,6 +239,16 @@
                     return false;
                 })
                 .appendTo(window.mini_map_options);
+
+            var connectBtn = $('<button>')
+                .text('connect')
+                .click(function(evt) {
+                    var address = 'ws://192.168.0.102:34343';
+                    connectToMapServer(address);
+                    connectBtn.prop('disabled', true);
+                    connectBtn.text('connected');
+                })
+                .appendTo(window.mini_map_options);
         }
     }
 
@@ -248,10 +289,10 @@
         isAgitated: false,
         wasSimpleDrawing: true,
 
-        destroy: function() {
+        destroy: function(fromAlly) {
             delete cells[this.id];
             id = my_cell_ids.indexOf(this.id);
-            -1 != id && my_cell_ids.splice(id, 1);
+            !fromAlly && -1 != id && my_cell_ids.splice(id, 1);
             this.destroyed = true;
             miniMapUnregisterToken(this.id);
         },
@@ -294,20 +335,26 @@
     };
 
     // extract a websocket packet which contains the information of cells
-    function extractCellPacket(data, offset) {
+    function extractCellPacket(data, offset, fromAlly) {
+        ////
+        if (fromAlly === undefined)
+            fromAlly = false;
+        ////
+
+
         var I = +new Date;
         var qa = false;
         var b = Math.random(), c = offset;
         var size = data.getUint16(c, true);
         c = c + 2;
 
-        // destroy foods? (or cells?)
+        // destroy cells
         for (var e = 0; e < size; ++e) {
             var p = cells[data.getUint32(c, true)],
                 f = cells[data.getUint32(c + 4, true)],
                 c = c + 8;
             p && f && (
-                f.destroy(),
+                f.destroy(fromAlly),
                 f.ox = f.x,
                 f.oy = f.y,
                 f.oSize = f.size,
@@ -375,13 +422,13 @@
             n && k.setName(n);
         }
 
-        // destroy cells(?)
+        // destroy cells
         b = data.getUint32(c, true);
         c += 4;
         for (e = 0; e < b; e++)
             d = data.getUint32(c, true),
             c += 4, k = cells[d],
-            null != k && k.destroy();
+            null != k && k.destroy(fromAlly);
     }
 
     // extract the type of packet and dispatch it to a corresponding extractor
@@ -391,6 +438,7 @@
         240 == data.getUint8(c) && (c += 5);
         switch (data.getUint8(c++)) {
             case 16: // cells data
+                sendMapData(event.data, c);
                 extractCellPacket(data, c);
                 break;
             case 20: // cleanup ids
@@ -464,5 +512,5 @@
 
     $(window.document).ready(function() {
         miniMapInit();
-    })
+    });
 })();

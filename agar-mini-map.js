@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         agar-mini-map
 // @namespace    http://github.com/dimotsai/
-// @version      0.31
+// @version      0.32
 // @description  This script will show a mini map and your location on agar.io
 // @author       dimotsai
 // @license      MIT
@@ -15,21 +15,22 @@
     var $ = window.jQuery;
     var map_server = null;
 
-    var cells = [];
-    var my_cell_ids = [];
-
     var options = {
         enableMultiCells: true,
         enablePosition: true,
         enableCross: true
     };
 
+    // game states
+    var cells = [];
+    var my_cell_ids = [];
     var start_x = -7000,
         start_y = -7000,
         end_x = 7000,
         end_y = 7000,
         length_x = 14000,
         length_y = 14000;
+    var render_timer = null;
 
     function sendMapData(data, offset) {
         if (map_server !== null) {
@@ -147,7 +148,16 @@
 
     function miniMapInit() {
         var $ = window.jQuery;
-        window.mini_map_tokens = {};
+        window.mini_map_tokens = [];
+
+        cells = [];
+        my_cell_ids = [];
+        start_x = -7000;
+        start_y = -7000;
+        end_x = 7000;
+        end_y = 7000;
+        length_x = 14000;
+        length_y = 14000;
 
         if ($('#mini-map-wrapper').length === 0) {
             var wrapper = $('<div>').attr('id', 'mini-map-wrapper').css({
@@ -174,7 +184,8 @@
             window.mini_map = mini_map[0];
         }
 
-        setInterval(miniMapRender, 1000 / 30);
+        if (render_timer === null)
+            render_timer = setInterval(miniMapRender, 1000 / 30);
 
         if ($('#mini-map-pos').length === 0) {
             window.mini_map_pos = $('<div>').attr('id', 'mini-map-pos').css({
@@ -464,9 +475,9 @@
     window.WebSocket = function(url, protocols) {
         console.log('Listen');
 
-    if (protocols === undefined) {
-        protocols = [];
-    }
+        if (protocols === undefined) {
+            protocols = [];
+        }
 
         var ws = new _WebSocket(url, protocols);
 
@@ -481,8 +492,8 @@
             return ws.send.call(ws, data);
         };
 
-        this.close = function(code, reason){
-            return ws.close.call(ws, code, reason);
+        this.close = function(){
+            return ws.close.call(ws);
         };
 
         this.onopen = function(event){};
@@ -491,20 +502,25 @@
         this.onmessage = function(event){};
 
         ws.onopen = function(event) {
-            return this.onopen.call(ws, event);
+            miniMapInit();
+            if (this.onopen)
+                return this.onopen.call(ws, event);
         }.bind(this);
 
         ws.onmessage = function(event) {
             extractPacket(event);
-            return this.onmessage.call(ws, event);
+            if (this.onmessage)
+                return this.onmessage.call(ws, event);
         }.bind(this);
 
         ws.onclose = function(event) {
-            return this.onclose.call(ws, event);
+            if (this.onclose)
+                return this.onclose.call(ws, event);
         }.bind(this);
 
         ws.onerror = function(event) {
-            return this.onerror.call(ws, event);
+            if (this.onerror)
+                return this.onerror.call(ws, event);
         }.bind(this);
     };
 

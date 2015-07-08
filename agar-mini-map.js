@@ -24,6 +24,7 @@
     // game states
     var cells = [];
     var my_cell_ids = [];
+    var ally_cell_ids = [];
     var start_x = -7000,
         start_y = -7000,
         end_x = 7000,
@@ -32,22 +33,38 @@
         length_y = 14000;
     var render_timer = null;
 
-    function sendMapData(data, offset) {
+    function sendRawMapData(data) {
         if (map_server !== null && map_server.readyState === window._WebSocket.OPEN) {
-            map_server.send(data.slice(offset));
+            map_server.send(data);
         }
     }
 
-    function connectToMapServer(address, onClose) {
+    function sendMyIds() {
+        for (var i = 0; i < my_cell_ids.length; ++i) {
+            if (my_cell_ids[i] == 0)
+                continue;
+
+            var buf = new ArrayBuffer(10);
+            var data = new DataView(buf);
+
+            data.setUint8(0, 240);
+            data.setUint8(5, 32);
+            data.setUint32(6, my_cell_ids[i], true);
+            sendRawMapData(data);
+        }
+    }
+
+    function connectToMapServer(address, onOpen, onClose) {
         var ws = new window._WebSocket(address);
         ws.binaryType = "arraybuffer";
 
         ws.onopen = function() {
+            onOpen();
             console.log(address + ' connected');
         }
 
         ws.onmessage = function(event) {
-            extractCellPacket(new DataView(event.data), 0, true);
+            extractPacket(event, true);
         }
 
         ws.onerror = function() {
@@ -233,7 +250,6 @@
                 label.append(checkbox);
                 label.append(' ' + name);
 
-
                 checkbox.click(function(options, name) { return function(evt) {
                     options[name] = evt.target.checked;
                     console.log(name, evt.target.checked);
@@ -269,7 +285,9 @@
                 if (/ws:\/\/[0-9]{1,3}(\.[0-9]{1,3}){3}(:[0-9]{1,5})?/.test(address))
                 {
                     connectBtn.text('disconnect');
-                    connectToMapServer(address, function onClose() {
+                    connectToMapServer(address, function onOpen() {
+                        sendMyIds();
+                    }, function onClose() {
                         disconnect();
                     });
 
@@ -278,12 +296,15 @@
 
                     miniMapReset();
                 }
+
+                connectBtn.blur();
             };
 
             var disconnect = function() {
                 connectBtn.text('connect');
                 connectBtn.off('click');
                 connectBtn.on('click', connect);
+                connectBtn.blur();
                 map_server.close();
 
                 miniMapReset();
@@ -475,21 +496,33 @@
     }
 
     // extract the type of packet and dispatch it to a corresponding extractor
-    function extractPacket(event) {
+    function extractPacket(event, fromAlly) {
+        if (fromAlly === undefined) {
+            fromAlly = false;
+        }
+
         var c = 0;
         var data = new DataView(event.data);
         240 == data.getUint8(c) && (c += 5);
-        switch (data.getUint8(c++)) {
+        var opcode = data.getUint8(c);
+        c++;
+        switch (opcode) {
             case 16: // cells data
-                sendMapData(event.data, c);
-                extractCellPacket(data, c);
+                extractCellPacket(data, c, fromAlly);
                 break;
             case 20: // cleanup ids
                 my_cell_ids = [];
                 break;
             case 32: // cell id belongs me
                 var id = data.getUint32(c, true);
-                my_cell_ids.push(id);
+
+                if (! fromAlly) {
+                    if (my_cell_ids.indexOf(id) === -1)
+                        my_cell_ids.push(id);
+                } else {
+                    if (ally_cell_ids.indexOf(id) === -1)
+                        ally_cell_ids.push(id);
+                }
                 break;
             case 64: // get borders
                 start_x = data.getFloat64(c, !0), c += 8,
@@ -500,6 +533,15 @@
                 center_y = (start_y + end_y) / 2,
                 length_x = Math.abs(start_x - end_x),
                 length_y = Math.abs(start_y - end_y);
+        }
+
+        if (! fromAlly) {
+            // send map data to the map server
+            switch (opcode) {
+                case 16: // cell data
+                case 32: // cell id begons to me
+                    sendRawMapData(event.data);
+            }
         }
     };
 

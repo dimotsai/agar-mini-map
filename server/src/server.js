@@ -8,10 +8,10 @@ wss.broadcast = function broadcast(data, except = {}) {
     var to = [];
 
     wss.clients.forEach(function each(client) {
-        var key = client._socket.remoteAddress + ':' + client._socket.remotePort;
-        if (except[key] === undefined) {
+        var address = client._socket.remoteAddress + ':' + client._socket.remotePort;
+        if (except[address] === undefined && client && client.readyState === 1) {
             client.send(data);
-            to.push(key);
+            to.push(address);
         }
     });
 
@@ -19,17 +19,18 @@ wss.broadcast = function broadcast(data, except = {}) {
 };
 
 wss.on('connection', function connection(ws) {
+    var address = ws._socket.remoteAddress + ':' + ws._socket.remotePort;
+
     ws.on('message', function incoming(data) {
         var except = {};
-        var key = ws._socket.remoteAddress + ':' + ws._socket.remotePort;
-        except[key] = ws;
+        except[address] = ws;
         wss.broadcast(data, except);
 
-        debug('receive', key);
+        debug('receive', address);
     });
 
     ws.on('close', function close() {
-        console.log(ws._socket.remoteAddress + ':' + ws._socket.remotePort, 'closed');
+        console.log(address, 'closed');
     });
 
     console.log(ws._socket.remoteAddress + ':' + ws._socket.remotePort, 'connected');

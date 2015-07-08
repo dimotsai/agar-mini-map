@@ -33,17 +33,17 @@
     var render_timer = null;
 
     function sendMapData(data, offset) {
-        if (map_server !== null) {
+        if (map_server !== null && map_server.readyState === window._WebSocket.OPEN) {
             map_server.send(data.slice(offset));
         }
     }
 
-    function connectToMapServer(address) {
+    function connectToMapServer(address, onClose) {
         var ws = new window._WebSocket(address);
         ws.binaryType = "arraybuffer";
 
         ws.onopen = function() {
-             console.log(address + ' connected');
+            console.log(address + ' connected');
         }
 
         ws.onmessage = function(event) {
@@ -51,12 +51,14 @@
         }
 
         ws.onerror = function() {
-             console.error('failed to connect to map server');
+            onClose();
+            console.error('failed to connect to map server');
         }
 
         ws.onclose = function() {
-             map_server = null;
-             console.log('map server disconnected');
+            onClose();
+            map_server = null;
+            console.log('map server disconnected');
         }
 
         map_server = ws;
@@ -146,8 +148,12 @@
         window.mini_map_pos.text('x: ' + x.toFixed(0) + ', y: ' + y.toFixed(0));
     }
 
+    function miniMapReset() {
+        cells = [];
+        window.mini_map_tokens = [];
+    }
+
     function miniMapInit() {
-        var $ = window.jQuery;
         window.mini_map_tokens = [];
 
         cells = [];
@@ -251,14 +257,41 @@
                 })
                 .appendTo(window.mini_map_options);
 
+            var addressInput = $('<input>')
+                .attr('placeholder', 'ws://127.0.0.1:34343')
+                .attr('type', 'text')
+                .val('ws://192.168.0.152:34343')
+                .appendTo(window.mini_map_options);
+
+            var connect = function (evt) {
+                var address = addressInput.val();
+
+                if (/ws:\/\/[0-9]{1,3}(\.[0-9]{1,3}){3}(:[0-9]{1,5})?/.test(address))
+                {
+                    connectBtn.text('disconnect');
+                    connectToMapServer(address, function onClose() {
+                        disconnect();
+                    });
+
+                    connectBtn.off('click');
+                    connectBtn.on('click', disconnect);
+
+                    miniMapReset();
+                }
+            };
+
+            var disconnect = function() {
+                connectBtn.text('connect');
+                connectBtn.off('click');
+                connectBtn.on('click', connect);
+                map_server.close();
+
+                miniMapReset();
+            };
+
             var connectBtn = $('<button>')
                 .text('connect')
-                .click(function(evt) {
-                    var address = 'ws://192.168.0.102:34343';
-                    connectToMapServer(address);
-                    connectBtn.prop('disabled', true);
-                    connectBtn.text('connected');
-                })
+                .click(connect)
                 .appendTo(window.mini_map_options);
         }
     }
@@ -352,20 +385,19 @@
             fromAlly = false;
         ////
 
-
         var I = +new Date;
         var qa = false;
         var b = Math.random(), c = offset;
         var size = data.getUint16(c, true);
         c = c + 2;
 
-        // destroy cells
+        // Nodes to be destroyed (killed)
         for (var e = 0; e < size; ++e) {
             var p = cells[data.getUint32(c, true)],
                 f = cells[data.getUint32(c + 4, true)],
                 c = c + 8;
             p && f && (
-                f.destroy(fromAlly),
+                f.destroy(),
                 f.ox = f.x,
                 f.oy = f.y,
                 f.oSize = f.size,
@@ -375,7 +407,7 @@
                 f.updateTime = I)
         }
 
-        // update or create cells (player)
+        // Nodes to be updated
         for (e = 0; ; ) {
             var d = data.getUint32(c, true);
             c += 4;
@@ -433,7 +465,7 @@
             n && k.setName(n);
         }
 
-        // destroy cells
+        // Destroy queue + nonvisible nodes
         b = data.getUint32(c, true);
         c += 4;
         for (e = 0; e < b; e++)

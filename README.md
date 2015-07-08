@@ -16,14 +16,29 @@ The user script managers will automatically load agar-mini-map for you.
     1. Go to https://greasyfork.org/en/scripts/10286-agar-mini-map
     2. Click `Install this script`
 
-
-
 ### Manually install for other browsers
 
 1. Simply open up JavaScript Console
 2. Enter the code in [agar-mini-map.js](https://raw.githubusercontent.com/dimotsai/agar-mini-map/master/agar-mini-map.js) into console
 
 Note: If you are taking this approach, you might have to re-select server to make it work.
+
+### Shared your map data to others
+#### Minimap Server
+To build a server
+```
+cd src
+npm install && npm run build
+```
+
+To host a server
+```
+npm run start
+```
+
+#### Client
+* Simply enter an address of a minimap server, and click `connect`.
+  e.g. ws://127.0.0.1:34343
 
 ## Screenshots
 

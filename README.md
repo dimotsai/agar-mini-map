@@ -25,16 +25,17 @@ Note: If you are taking this approach, you might have to re-select server to mak
 
 ### Shared your map data to others
 #### Minimap Server
-To build a server
+To build a server:
 ```
-cd src
+cd server
 npm install && npm run build
 ```
 
-To host a server
+To host a server:
 ```
 npm run start
 ```
+Now you can access your minimap server at `ws://<your ip address>:34343`
 
 #### Client
 * Simply enter an address of a minimap server, and click `connect`.

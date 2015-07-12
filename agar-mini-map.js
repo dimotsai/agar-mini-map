@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         agar-mini-map
 // @namespace    http://github.com/dimotsai/
-// @version      0.33
+// @version      0.34
 // @description  This script will show a mini map and your location on agar.io
 // @author       dimotsai
 // @license      MIT
@@ -436,10 +436,10 @@
                 break;
             }
             ++e;
-            var p = data.getInt16(c, true),
-                c = c + 2,
-                f = data.getInt16(c, true),
-                c = c + 2;
+            var p = data.getInt32(c, true),
+                c = c + 4,
+                f = data.getInt32(c, true),
+                c = c + 4;
                 g = data.getInt16(c, true);
                 c = c + 2;
             for (var h = data.getUint8(c++), m = data.getUint8(c++), q = data.getUint8(c++), h = (h << 16 | m << 8 | q).toString(16); 6 > h.length; )

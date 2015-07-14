@@ -6,6 +6,7 @@
 // @author       dimotsai
 // @license      MIT
 // @match        http://agar.io/*
+// @require      https://raw.githubusercontent.com/mcollina/msgpack5/master/dist/msgpack5.min.js
 // @grant        none
 // @run-at       document-body
 // ==/UserScript==
@@ -14,6 +15,7 @@
     var _WebSocket = window._WebSocket = window.WebSocket;
     var $ = window.jQuery;
     var map_server = null;
+    var msgpack = msgpack5();
 
     var options = {
         enableMultiCells: true,
@@ -39,21 +41,6 @@
         }
     }
 
-    function sendMyIds() {
-        for (var i = 0; i < my_cell_ids.length; ++i) {
-            if (my_cell_ids[i] == 0)
-                continue;
-
-            var buf = new ArrayBuffer(10);
-            var data = new DataView(buf);
-
-            data.setUint8(0, 240);
-            data.setUint8(5, 32);
-            data.setUint32(6, my_cell_ids[i], true);
-            sendRawMapData(data);
-        }
-    }
-
     function connectToMapServer(address, onOpen, onClose) {
         var ws = new window._WebSocket(address);
         ws.binaryType = "arraybuffer";
@@ -64,7 +51,30 @@
         }
 
         ws.onmessage = function(event) {
-            extractPacket(event, true);
+            var buffer = new Uint8Array(event.data);
+            var packet = msgpack.decode(buffer);
+            switch(packet.type) {
+                case 128:
+                    for (var i=0; i < packet.data.addition.length; ++i) {
+                        var cell = packet.data.addition[i];
+                        if (! miniMapIsRegisteredToken(cell.id))
+                        {
+                            miniMapRegisterToken(
+                                cell.id,
+                                miniMapCreateToken(cell.id, cell.color)
+                            );
+                        }
+
+                        var size_n = cell.size/length_x;
+                        miniMapUpdateToken(cell.id, (cell.x - start_x)/length_x, (cell.y - start_y)/length_y, size_n);
+                    }
+
+                    for (var i=0; i < packet.data.deletion.length; ++i) {
+                        var id = packet.data.deletion[i];
+                        miniMapUnregisterToken(id);
+                    }
+                    break;
+            }
         }
 
         ws.onerror = function() {
@@ -276,7 +286,7 @@
             var addressInput = $('<input>')
                 .attr('placeholder', 'ws://127.0.0.1:34343')
                 .attr('type', 'text')
-                .val('ws://192.168.0.152:34343')
+                .val('ws://192.168.0.103:34343')
                 .appendTo(window.mini_map_options);
 
             var connect = function (evt) {
@@ -286,7 +296,6 @@
                 {
                     connectBtn.text('disconnect');
                     connectToMapServer(address, function onOpen() {
-                        sendMyIds();
                     }, function onClose() {
                         disconnect();
                     });
@@ -354,28 +363,32 @@
         isAgitated: false,
         wasSimpleDrawing: true,
 
-        destroy: function(fromAlly) {
+        destroy: function() {
             delete cells[this.id];
             id = my_cell_ids.indexOf(this.id);
-            !fromAlly && -1 != id && my_cell_ids.splice(id, 1);
+            -1 != id && my_cell_ids.splice(id, 1);
             this.destroyed = true;
-            miniMapUnregisterToken(this.id);
+            if (map_server === null || map_server.readyState !== window._WebSocket.OPEN) {
+                miniMapUnregisterToken(this.id);
+            }
         },
         setName: function(name) {
             this.name = name;
         },
         updatePos: function() {
-            if (options.enableMultiCells || -1 != my_cell_ids.indexOf(this.id)) {
-                if (! miniMapIsRegisteredToken(this.id))
-                {
-                    miniMapRegisterToken(
-                        this.id,
-                        miniMapCreateToken(this.id, this.color)
-                    );
-                }
+            if (map_server === null || map_server.readyState !== window._WebSocket.OPEN) {
+                if (options.enableMultiCells || -1 != my_cell_ids.indexOf(this.id)) {
+                    if (! miniMapIsRegisteredToken(this.id))
+                    {
+                        miniMapRegisterToken(
+                            this.id,
+                            miniMapCreateToken(this.id, this.color)
+                        );
+                    }
 
-                var size_n = this.nSize/length_x;
-                miniMapUpdateToken(this.id, (this.nx - start_x)/length_x, (this.ny - start_y)/length_y, size_n);
+                    var size_n = this.nSize/length_x;
+                    miniMapUpdateToken(this.id, (this.nx - start_x)/length_x, (this.ny - start_y)/length_y, size_n);
+                }
             }
 
             if (options.enablePosition && -1 != my_cell_ids.indexOf(this.id)) {
@@ -400,10 +413,13 @@
     };
 
     // extract a websocket packet which contains the information of cells
-    function extractCellPacket(data, offset, fromAlly) {
+    function extractCellPacket(data, offset) {
         ////
-        if (fromAlly === undefined)
-            fromAlly = false;
+        var dataToSend = {
+            destroyQueue : [],
+            nodes : [],
+            nonVisibleNodes : []
+        };
         ////
 
         var I = +new Date;
@@ -425,7 +441,9 @@
                 f.nx = p.x,
                 f.ny = p.y,
                 f.nSize = f.size,
-                f.updateTime = I)
+                f.updateTime = I,
+                dataToSend.destroyQueue.push(f.id));
+
         }
 
         // Nodes to be updated
@@ -465,13 +483,16 @@
             n = k;
             k = null;
 
+            var updated = false;
             // if d in cells then modify it, otherwise create a new cell
             cells.hasOwnProperty(d)
-                ? (k = cells[d], k.updatePos(),
+                ? (k = cells[d], 
+                   k.updatePos(),
                    k.ox = k.x,
                    k.oy = k.y,
                    k.oSize = k.size,
-                   k.color = h)
+                   k.color = h,
+                   updated = true)
                 : (k = new Cell(d, p, f, g, h, n),
                    k.pX = p,
                    k.pY = f);
@@ -484,23 +505,39 @@
             k.updateCode = b;
             k.updateTime = I;
             n && k.setName(n);
+
+            // ignore food creation
+            if (updated) {
+                dataToSend.nodes.push({
+                    id: k.id,
+                    x: k.nx,
+                    y: k.ny,
+                    size: k.nSize,
+                    color: k.color
+                });       
+            }
         }
 
         // Destroy queue + nonvisible nodes
         b = data.getUint32(c, true);
         c += 4;
-        for (e = 0; e < b; e++)
-            d = data.getUint32(c, true),
-            c += 4, k = cells[d],
-            null != k && k.destroy(fromAlly);
+        for (e = 0; e < b; e++) {
+            d = data.getUint32(c, true);
+            c += 4, k = cells[d];
+            null != k && k.destroy();
+            dataToSend.nonVisibleNodes.push(d);
+        }
+
+        var packet = {
+            type: 16,
+            data: dataToSend
+        }
+
+        sendRawMapData(msgpack.encode(packet).toArrayBuffer());
     }
 
     // extract the type of packet and dispatch it to a corresponding extractor
-    function extractPacket(event, fromAlly) {
-        if (fromAlly === undefined) {
-            fromAlly = false;
-        }
-
+    function extractPacket(event) {
         var c = 0;
         var data = new DataView(event.data);
         240 == data.getUint8(c) && (c += 5);
@@ -508,7 +545,7 @@
         c++;
         switch (opcode) {
             case 16: // cells data
-                extractCellPacket(data, c, fromAlly);
+                extractCellPacket(data, c);
                 break;
             case 20: // cleanup ids
                 my_cell_ids = [];
@@ -516,13 +553,8 @@
             case 32: // cell id belongs me
                 var id = data.getUint32(c, true);
 
-                if (! fromAlly) {
-                    if (my_cell_ids.indexOf(id) === -1)
-                        my_cell_ids.push(id);
-                } else {
-                    if (ally_cell_ids.indexOf(id) === -1)
-                        ally_cell_ids.push(id);
-                }
+                if (my_cell_ids.indexOf(id) === -1)
+                    my_cell_ids.push(id);
                 break;
             case 64: // get borders
                 start_x = data.getFloat64(c, !0), c += 8,
@@ -533,15 +565,6 @@
                 center_y = (start_y + end_y) / 2,
                 length_x = Math.abs(start_x - end_x),
                 length_y = Math.abs(start_y - end_y);
-        }
-
-        if (! fromAlly) {
-            // send map data to the map server
-            switch (opcode) {
-                case 16: // cell data
-                case 32: // cell id begons to me
-                    sendRawMapData(event.data);
-            }
         }
     };
 

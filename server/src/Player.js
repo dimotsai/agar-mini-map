@@ -16,6 +16,7 @@ class Player
         this.port = port;
         this.ids = [];
         this.cells = [];
+        this.server = '';
     }
 
     /**

@@ -3,14 +3,16 @@ import Packet from './Packet.js';
 import Player from './Player.js';
 import MiniMap from './MiniMap.js';
 import msgpack from 'msgpack';
+import url from 'url';
+import _ from 'lodash';
 
-//var msgpack = msgpack5();
 var debug = require('debug')('server');
 var port = 34343;
 var wss = new WebSocketServer({ port: port });
 
 var players = [];
-var player_counter = 0;
+var player_count = 0;
+var accepted_server_url = '';
 
 var map = new MiniMap();
 
@@ -23,6 +25,31 @@ if (Buffer.prototype.toArrayBuffer === undefined) {
         }
         return ab;
     }
+}
+
+function findUnusedPlayerID () {
+    for (var i=0; i < players.length; ++i) {
+         if (players[i] === undefined)
+             return i;
+    }
+
+    return players.length;
+};
+
+function updatePlayers() {
+    var data = [];
+    for (var p in players) {
+        var player = players[p];
+        data[player.no] = {
+            no: player.no,
+            ids: player.ids
+        };
+    }
+
+    wss.broadcast(msgpack.pack({
+        type: Packet.TYPE_UPDATE_PLAYERS,
+        data: data
+    }));
 }
 
 wss.broadcast = function broadcast(data, except = {}) {
@@ -40,14 +67,16 @@ wss.broadcast = function broadcast(data, except = {}) {
 };
 
 wss.on('connection', function connection(ws) {
-    var player = new Player(player_counter++, ws._socket.remoteAddress, ws._socket.remotePort);
+    var player = new Player(findUnusedPlayerID(), ws._socket.remoteAddress, ws._socket.remotePort);
     var address = player.getFullAddress();
     players[player.no] = player;
+    player_count++;
+
+    updatePlayers();
 
     ws.on('message', function incoming(data) {
         var except = {};
         except[address] = ws;
-        //wss.broadcast(data, except);
         var packet = new msgpack.unpack(data);
 
         switch (packet.type) {
@@ -56,35 +85,49 @@ wss.on('connection', function connection(ws) {
                 break;
             case Packet.TYPE_ADD_NODE:
                 player.addNode(packet.data);
+                updatePlayers();
+                break;
+            case Packet.TYPE_UPDATE_ADDRESS:
+                var original_server = player.server;
+                player.server = url.parse(packet.data).host;
+                console.log('player', player.no + 1, 'update address:', original_server , '->', player.server);
+
+                if (player_count == 1) {
+                    accepted_server_url = player.server;
+                } else {
+                    if (accepted_server_url != player.server) {
+                        console.warn('player\'s address mismatched:', player.server, '!=', accepted_server_url );
+                        ws.close();
+                    }
+                }
                 break;
         }
 
-        debug('receive', address, 'packet size: ', data.length);
+        debug('receive', address, 'packet size: ', data.length, 'packet type: ', packet.type);
     });
 
     ws.on('close', function close() {
-        console.log('player', player.no, address, 'has left.');
+        console.log('player', player.no + 1, address, 'has left.');
         delete players[player.no];
+        player_count--;
     });
 
-    console.log('player', player.no, address, 'joined.');
+    console.log('player', player.no + 1, address, 'joined.');
 });
 
 setInterval(function updateMap() {
     var diff = map.mergeFromPlayers(players);
-    //console.log(map);
+
     var packet = {
         type: Packet.TYPE_UPDATE_MAP,
         data: diff
     };
 
     var buffer = msgpack.pack(packet);
-    //console.log(buffer.length);
-    //console.log(buffer.toArrayBuffer());
 
     if (diff.addition.length > 0 || diff.deletion.length > 0)
         wss.broadcast(buffer);
 }, 1000 / 30);
 
-console.log('server is now on ws://0.0.0.0:' + port);
+console.log('server is now on the port:' + port);
 

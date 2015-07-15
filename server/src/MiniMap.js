@@ -4,7 +4,6 @@ class MiniMap
 {
     constructor() {
         this.cells = [];
-        this.players = [];
     }
 
     mergeFromPlayers(players) {
@@ -15,12 +14,9 @@ class MiniMap
             deletion: []
         };
 
+
         for (var p in players) {
             var player = players[p];
-            this.players[player.no] = {
-                no: player.no,
-                ids: player.ids
-            };
 
             for (var c in player.cells) {
                 var cell = player.cells[c];
@@ -46,23 +42,6 @@ class MiniMap
         this.cells = cells;
 
         return diff;
-    }
-
-    getCompactData() {
-        var ret = {
-            cells: [],
-            players: []
-        }
-
-        for (var c in this.cells) {
-            ret.cells.push(this.cells[c]);
-        }
-
-        for (var p in this.players) {
-            ret.players.push(this.players[p]);
-        }
-
-        return ret;
     }
 }
 

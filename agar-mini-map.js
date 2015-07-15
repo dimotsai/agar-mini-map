@@ -14,8 +14,8 @@
 (function() {
     var _WebSocket = window._WebSocket = window.WebSocket;
     var $ = window.jQuery;
-    var map_server = null;
     var msgpack = msgpack5();
+
 
     var options = {
         enableMultiCells: true,
@@ -24,6 +24,10 @@
     };
 
     // game states
+    window.agar_server = null;
+    var map_server = null;
+    var players = [];
+    var id_players = [];
     var cells = [];
     var my_cell_ids = [];
     var ally_cell_ids = [];
@@ -74,6 +78,16 @@
                         miniMapUnregisterToken(id);
                     }
                     break;
+                case 129:
+                    players = packet.data;
+                    for (var p in players) {
+                        var player = players[p];
+                        var ids = player.ids;
+                        for (var i in ids) {
+                            id_players[ids[i]] = player.no;
+                        }
+                    }
+                    break;
             }
         }
 
@@ -97,11 +111,15 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (var id in window.mini_map_tokens) {
             var token = window.mini_map_tokens[id];
+            var x = token.x * canvas.width;
+            var y = token.y * canvas.height;
+            var size = token.size * canvas.width;
+
             ctx.beginPath();
             ctx.arc(
-                token.x * canvas.width,
-                token.y * canvas.height,
-                token.size * canvas.width,
+                x,
+                y,
+                size,
                 0,
                 2 * Math.PI,
                 false
@@ -110,8 +128,17 @@
             ctx.fillStyle = token.color;
             ctx.fill();
 
+
             if (options.enableCross && -1 != my_cell_ids.indexOf(token.id))
                 miniMapDrawCross(token.x, token.y);
+
+            if (id_players[id] !== undefined) {
+                ctx.font = size * 2 + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = 'white';
+                ctx.fillText(id_players[id] + 1, x, y);
+            }
         };
     }
 
@@ -286,7 +313,7 @@
             var addressInput = $('<input>')
                 .attr('placeholder', 'ws://127.0.0.1:34343')
                 .attr('type', 'text')
-                .val('ws://192.168.0.103:34343')
+                .val('ws://127.0.0.1:34343')
                 .appendTo(window.mini_map_options);
 
             var connect = function (evt) {
@@ -296,7 +323,19 @@
                 {
                     connectBtn.text('disconnect');
                     connectToMapServer(address, function onOpen() {
+                        for (var i in my_cell_ids) {
+                            sendRawMapData(msgpack.encode({
+                                type: 32,
+                                data: my_cell_ids[i]
+                            }));
+                        }
+                        sendRawMapData(msgpack.encode({
+                            type: 100,
+                            data: agar_server
+                        }));
                     }, function onClose() {
+                        players = [];
+                        id_players = [];
                         disconnect();
                     });
 
@@ -486,7 +525,7 @@
             var updated = false;
             // if d in cells then modify it, otherwise create a new cell
             cells.hasOwnProperty(d)
-                ? (k = cells[d], 
+                ? (k = cells[d],
                    k.updatePos(),
                    k.ox = k.x,
                    k.oy = k.y,
@@ -514,7 +553,7 @@
                     y: k.ny,
                     size: k.nSize,
                     color: k.color
-                });       
+                });
             }
         }
 
@@ -555,6 +594,11 @@
 
                 if (my_cell_ids.indexOf(id) === -1)
                     my_cell_ids.push(id);
+
+                sendRawMapData(msgpack.encode({
+                    type: 32,
+                    data: id
+                }));
                 break;
             case 64: // get borders
                 start_x = data.getFloat64(c, !0), c += 8,
@@ -600,6 +644,7 @@
 
         ws.onopen = function(event) {
             miniMapInit();
+            agar_server = this.url;
             if (this.onopen)
                 return this.onopen.call(ws, event);
         }.bind(this);

@@ -16,7 +16,6 @@
     var $ = window.jQuery;
     var msgpack = msgpack5();
 
-
     var options = {
         enableMultiCells: true,
         enablePosition: true,
@@ -24,13 +23,12 @@
     };
 
     // game states
-    window.agar_server = null;
+    var agar_server = null;
     var map_server = null;
     var players = [];
     var id_players = [];
     var cells = [];
     var my_cell_ids = [];
-    var ally_cell_ids = [];
     var start_x = -7000,
         start_y = -7000,
         end_x = 7000,
@@ -39,13 +37,13 @@
         length_y = 14000;
     var render_timer = null;
 
-    function sendRawMapData(data) {
+    function miniMapSendRawData(data) {
         if (map_server !== null && map_server.readyState === window._WebSocket.OPEN) {
             map_server.send(data);
         }
     }
 
-    function connectToMapServer(address, onOpen, onClose) {
+    function miniMapConnectToServer(address, onOpen, onClose) {
         var ws = new window._WebSocket(address);
         ws.binaryType = "arraybuffer";
 
@@ -322,14 +320,14 @@
                 if (/ws:\/\/[0-9]{1,3}(\.[0-9]{1,3}){3}(:[0-9]{1,5})?/.test(address))
                 {
                     connectBtn.text('disconnect');
-                    connectToMapServer(address, function onOpen() {
+                    miniMapConnectToServer(address, function onOpen() {
                         for (var i in my_cell_ids) {
-                            sendRawMapData(msgpack.encode({
+                            miniMapSendRawData(msgpack.encode({
                                 type: 32,
                                 data: my_cell_ids[i]
                             }));
                         }
-                        sendRawMapData(msgpack.encode({
+                        miniMapSendRawData(msgpack.encode({
                             type: 100,
                             data: agar_server
                         }));
@@ -572,7 +570,7 @@
             data: dataToSend
         }
 
-        sendRawMapData(msgpack.encode(packet).toArrayBuffer());
+        miniMapSendRawData(msgpack.encode(packet).toArrayBuffer());
     }
 
     // extract the type of packet and dispatch it to a corresponding extractor
@@ -595,7 +593,7 @@
                 if (my_cell_ids.indexOf(id) === -1)
                     my_cell_ids.push(id);
 
-                sendRawMapData(msgpack.encode({
+                miniMapSendRawData(msgpack.encode({
                     type: 32,
                     data: id
                 }));

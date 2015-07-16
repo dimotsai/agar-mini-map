@@ -25,6 +25,7 @@
     // game states
     var agar_server = null;
     var map_server = null;
+    var player_name = [];
     var players = [];
     var id_players = [];
     var cells = [];
@@ -85,6 +86,8 @@
                             id_players[ids[i]] = player.no;
                         }
                     }
+                    mini_map_party.trigger('update-list');
+
                     break;
             }
         }
@@ -217,6 +220,7 @@
         length_x = 14000;
         length_y = 14000;
 
+        // minimap dom
         if ($('#mini-map-wrapper').length === 0) {
             var wrapper = $('<div>').attr('id', 'mini-map-wrapper').css({
                 position: 'fixed',
@@ -242,9 +246,11 @@
             window.mini_map = mini_map[0];
         }
 
+        // minimap renderer
         if (render_timer === null)
             render_timer = setInterval(miniMapRender, 1000 / 30);
 
+        // minimap location
         if ($('#mini-map-pos').length === 0) {
             window.mini_map_pos = $('<div>').attr('id', 'mini-map-pos').css({
                 bottom: 10,
@@ -257,6 +263,7 @@
             }).appendTo(document.body);
         }
 
+        // minimap options
         if ($('#mini-map-options').length === 0) {
             window.mini_map_options = $('<div>').attr('id', 'mini-map-options').css({
                 bottom: 315,
@@ -321,6 +328,10 @@
                 {
                     connectBtn.text('disconnect');
                     miniMapConnectToServer(address, function onOpen() {
+                        miniMapSendRawData(msgpack.encode({
+                            type: 0,
+                            data: player_name
+                        }));
                         for (var i in my_cell_ids) {
                             miniMapSendRawData(msgpack.encode({
                                 type: 32,
@@ -331,9 +342,11 @@
                             type: 100,
                             data: agar_server
                         }));
+                        window.mini_map_party.show();
                     }, function onClose() {
                         players = [];
                         id_players = [];
+                        window.mini_map_party.hide();
                         disconnect();
                     });
 
@@ -360,6 +373,55 @@
                 .text('connect')
                 .click(connect)
                 .appendTo(window.mini_map_options);
+        }
+
+        // minimap party
+        if ($('#mini-map-party').length === 0) {
+            var mini_map_party = window.mini_map_party = $('<div>')
+                .css({
+                    top: 50,
+                    left: 10,
+                    width: 200,
+                    color: '#FFF',
+                    fontSize: 20,
+                    position: 'fixed',
+                    fontWeight: 600,
+                    background: 'rgba(128, 128, 128, 0.58)',
+                    textAlign: 'center',
+                    padding: 10
+                })
+                .attr('id', 'mini-map-party')
+                .appendTo(window.document.body)
+                .append(
+                    $('<h3>').css({
+                        margin: 0,
+                        padding: 0
+                    }).text('Party')
+                );
+
+            var mini_map_party_list = $('<ol>')
+                .attr('id', 'mini-map-party-list')
+                .css({
+                    listStyle: 'none',
+                    padding: 0,
+                    margin: 0
+                })
+                .appendTo(mini_map_party);
+
+            mini_map_party.on('update-list', function(e) {
+                mini_map_party_list.empty();
+
+                for (var p in players) {
+                    var player = players[p];
+                    var name = String.fromCharCode.apply(null, player.name);
+                    name = (name == '' ? 'anonymous' : name);
+                    $('<li>')
+                        .text(player.no + 1 + '. ' + name)
+                        .appendTo(mini_map_party_list);
+                }
+            });
+
+            mini_map_party.hide();
         }
     }
 
@@ -610,6 +672,23 @@
         }
     };
 
+    function extractSendPacket(data) {
+        var view = new DataView(data);
+        switch (view.getUint8(0, true)) {
+            case 0:
+                player_name = [];
+                for (var i=1; i < data.byteLength; i+=2) {
+                    player_name.push(view.getUint16(i, true));
+                }
+
+                miniMapSendRawData(msgpack.encode({
+                    type: 0,
+                    data: player_name
+                }));
+                break;
+        }
+    }
+
     // the injected point, overwriting the WebSocket constructor
     window.WebSocket = function(url, protocols) {
         console.log('Listen');
@@ -628,6 +707,7 @@
         refer(this, ws, 'url');
 
         this.send = function(data){
+            extractSendPacket(data);
             return ws.send.call(ws, data);
         };
 
@@ -642,7 +722,11 @@
 
         ws.onopen = function(event) {
             miniMapInit();
-            agar_server = this.url;
+            agar_server = url;
+            miniMapSendRawData(msgpack.encode({
+                type: 100,
+                data: url
+            }));
             if (this.onopen)
                 return this.onopen.call(ws, event);
         }.bind(this);

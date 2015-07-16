@@ -27,7 +27,7 @@ if (Buffer.prototype.toArrayBuffer === undefined) {
     }
 }
 
-function findUnusedPlayerID () {
+function findUnusedPlayerID() {
     for (var i=0; i < players.length; ++i) {
          if (players[i] === undefined)
              return i;
@@ -40,10 +40,11 @@ function updatePlayers() {
     var data = [];
     for (var p in players) {
         var player = players[p];
-        data[player.no] = {
+        data.push({
+            name: player.name,
             no: player.no,
             ids: player.ids
-        };
+        });
     }
 
     wss.broadcast(msgpack.pack({
@@ -77,11 +78,24 @@ wss.on('connection', function connection(ws) {
     ws.on('message', function incoming(data) {
         var except = {};
         except[address] = ws;
-        var packet = new msgpack.unpack(data);
+        try {
+            var packet = new msgpack.unpack(data);
+        } catch (ex) {
+            console.error(ex);
+            return false;
+        }
 
         switch (packet.type) {
+            case Packet.TYPE_SET_NICKNAME:
+                player.name = packet.data;
+                updatePlayers();
+                console.log('player', player.no + 1, 'set nickname:', player.getNameString());
+                break;
             case Packet.TYPE_UPDATE_NODES:
                 player.updateNodes(packet.data);
+                if (player.shouldUpdate) {
+                    updatePlayers();
+                }
                 break;
             case Packet.TYPE_ADD_NODE:
                 player.addNode(packet.data);
@@ -110,6 +124,7 @@ wss.on('connection', function connection(ws) {
         console.log('player', player.no + 1, address, 'has left.');
         delete players[player.no];
         player_count--;
+        updatePlayers();
     });
 
     console.log('player', player.no + 1, address, 'joined.');

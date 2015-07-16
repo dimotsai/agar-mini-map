@@ -9,6 +9,7 @@ class Packet
 export default Packet;
 
 // operations for server
+Packet.TYPE_SET_NICKNAME = 0;
 Packet.TYPE_UPDATE_NODES = 16;
 Packet.TYPE_CLEAR_NODES = 20;
 Packet.TYPE_ADD_NODE = 32;

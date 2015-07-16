@@ -27,7 +27,7 @@ Note: If you are taking this approach, you might have to re-select server to mak
 
 With the minimap server, you can:
 * Share the vision
-* Mark players in the same party (minimap server)
+* Mark cells which are in the same party (minimap server)
 
 Minimap server allows you share your vision to others who already connected to the minimap server. The minimap server merges players' vision and send back the bigger vision to you.
 

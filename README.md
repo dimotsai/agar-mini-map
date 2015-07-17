@@ -69,5 +69,6 @@ The minimap server will take the first player's agar.io server address as the co
 ## Related projects
 
 * [iamgyz/Agar-server-selection](https://github.com/iamgyz/Agar-server-selection)
+* [dimotsai/agar-mass-ejector](https://github.com/dimotsai/agar-mass-ejector)
 
 [1]: https://raw.githubusercontent.com/dimotsai/agar-mini-map/master/agar-mini-map.user.js

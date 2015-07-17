@@ -6,16 +6,17 @@
 // @author       dimotsai
 // @license      MIT
 // @match        http://agar.io/*
-// @require      https://raw.githubusercontent.com/mcollina/msgpack5/master/dist/msgpack5.min.js
+// @require      http://cdn.jsdelivr.net/msgpack/1.05/msgpack.js
 // @grant        none
 // @run-at       document-body
 // ==/UserScript==
 
+window.msgpack = this.msgpack;
+
 (function() {
     var _WebSocket = window._WebSocket = window.WebSocket;
     var $ = window.jQuery;
-    var msgpack = msgpack5();
-
+    var msgpack = window.msgpack;
     var options = {
         enableMultiCells: true,
         enablePosition: true,
@@ -40,7 +41,8 @@
 
     function miniMapSendRawData(data) {
         if (map_server !== null && map_server.readyState === window._WebSocket.OPEN) {
-            map_server.send(data);
+            var array = new Uint8Array(data);
+            map_server.send(array.buffer);
         }
     }
 
@@ -55,7 +57,7 @@
 
         ws.onmessage = function(event) {
             var buffer = new Uint8Array(event.data);
-            var packet = msgpack.decode(buffer);
+            var packet = msgpack.unpack(buffer);
             switch(packet.type) {
                 case 128:
                     for (var i=0; i < packet.data.addition.length; ++i) {
@@ -359,17 +361,17 @@
                 {
                     connectBtn.text('Disconnect');
                     miniMapConnectToServer(address, function onOpen() {
-                        miniMapSendRawData(msgpack.encode({
+                        miniMapSendRawData(msgpack.pack({
                             type: 0,
                             data: player_name
                         }));
                         for (var i in current_cell_ids) {
-                            miniMapSendRawData(msgpack.encode({
+                            miniMapSendRawData(msgpack.pack({
                                 type: 32,
                                 data: current_cell_ids[i]
                             }));
                         }
-                        miniMapSendRawData(msgpack.encode({
+                        miniMapSendRawData(msgpack.pack({
                             type: 100,
                             data: agar_server
                         }));
@@ -678,7 +680,7 @@
             data: dataToSend
         }
 
-        miniMapSendRawData(msgpack.encode(packet).toArrayBuffer());
+        miniMapSendRawData(msgpack.pack(packet));
     }
 
     // extract the type of packet and dispatch it to a corresponding extractor
@@ -701,7 +703,7 @@
                 if (current_cell_ids.indexOf(id) === -1)
                     current_cell_ids.push(id);
 
-                miniMapSendRawData(msgpack.encode({
+                miniMapSendRawData(msgpack.pack({
                     type: 32,
                     data: id
                 }));
@@ -727,7 +729,7 @@
                     player_name.push(view.getUint16(i, true));
                 }
 
-                miniMapSendRawData(msgpack.encode({
+                miniMapSendRawData(msgpack.pack({
                     type: 0,
                     data: player_name
                 }));
@@ -769,7 +771,7 @@
         ws.onopen = function(event) {
             miniMapInit();
             agar_server = url;
-            miniMapSendRawData(msgpack.encode({
+            miniMapSendRawData(msgpack.pack({
                 type: 100,
                 data: url
             }));

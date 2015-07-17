@@ -29,7 +29,7 @@
     var players = [];
     var id_players = [];
     var cells = [];
-    var my_cell_ids = [];
+    var current_cell_ids = [];
     var start_x = -7000,
         start_y = -7000,
         end_x = 7000,
@@ -130,7 +130,7 @@
             ctx.fill();
 
 
-            if (options.enableCross && -1 != my_cell_ids.indexOf(token.id))
+            if (options.enableCross && -1 != current_cell_ids.indexOf(token.id))
                 miniMapDrawCross(token.x, token.y);
 
             if (id_players[id] !== undefined) {
@@ -212,7 +212,7 @@
         window.mini_map_tokens = [];
 
         cells = [];
-        my_cell_ids = [];
+        current_cell_ids = [];
         start_x = -7000;
         start_y = -7000;
         end_x = 7000;
@@ -332,10 +332,10 @@
                             type: 0,
                             data: player_name
                         }));
-                        for (var i in my_cell_ids) {
+                        for (var i in current_cell_ids) {
                             miniMapSendRawData(msgpack.encode({
                                 type: 32,
-                                data: my_cell_ids[i]
+                                data: current_cell_ids[i]
                             }));
                         }
                         miniMapSendRawData(msgpack.encode({
@@ -464,8 +464,8 @@
 
         destroy: function() {
             delete cells[this.id];
-            id = my_cell_ids.indexOf(this.id);
-            -1 != id && my_cell_ids.splice(id, 1);
+            id = current_cell_ids.indexOf(this.id);
+            -1 != id && current_cell_ids.splice(id, 1);
             this.destroyed = true;
             if (map_server === null || map_server.readyState !== window._WebSocket.OPEN) {
                 miniMapUnregisterToken(this.id);
@@ -476,7 +476,7 @@
         },
         updatePos: function() {
             if (map_server === null || map_server.readyState !== window._WebSocket.OPEN) {
-                if (options.enableMultiCells || -1 != my_cell_ids.indexOf(this.id)) {
+                if (options.enableMultiCells || -1 != current_cell_ids.indexOf(this.id)) {
                     if (! miniMapIsRegisteredToken(this.id))
                     {
                         miniMapRegisterToken(
@@ -490,7 +490,7 @@
                 }
             }
 
-            if (options.enablePosition && -1 != my_cell_ids.indexOf(this.id)) {
+            if (options.enablePosition && -1 != current_cell_ids.indexOf(this.id)) {
                 miniMapUpdatePos(this.nx, this.ny);
             }
         }
@@ -647,13 +647,13 @@
                 extractCellPacket(data, c);
                 break;
             case 20: // cleanup ids
-                my_cell_ids = [];
+                current_cell_ids = [];
                 break;
             case 32: // cell id belongs me
                 var id = data.getUint32(c, true);
 
-                if (my_cell_ids.indexOf(id) === -1)
-                    my_cell_ids.push(id);
+                if (current_cell_ids.indexOf(id) === -1)
+                    current_cell_ids.push(id);
 
                 miniMapSendRawData(msgpack.encode({
                     type: 32,

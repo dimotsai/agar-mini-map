@@ -337,7 +337,7 @@
                 .text('?')
                 .on('click', function(e) {
                     window.open('https://github.com/dimotsai/agar-mini-map/#minimap-server');
-                    setting_btn.blur();
+                    help_btn.blur();
                     return false;
                 })
                 .appendTo(form_group);

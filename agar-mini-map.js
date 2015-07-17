@@ -129,7 +129,6 @@
             ctx.fillStyle = token.color;
             ctx.fill();
 
-
             if (options.enableCross && -1 != current_cell_ids.indexOf(token.id))
                 miniMapDrawCross(token.x, token.y);
 
@@ -527,7 +526,10 @@
             }
 
             if (options.enablePosition && -1 != current_cell_ids.indexOf(this.id)) {
+                window.mini_map_pos.show();
                 miniMapUpdatePos(this.nx, this.ny);
+            } else {
+                window.mini_map_pos.hide();
             }
         }
     };

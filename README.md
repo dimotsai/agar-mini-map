@@ -26,7 +26,7 @@ The user script managers will automatically load agar-mini-map for you.
 
 Note: If you are taking this approach, you might have to re-select server to make it work.
 
-### Share your vision to other players
+## Share your vision to other players
 
 With the minimap server, you can:
 * Share the vision
@@ -36,7 +36,7 @@ Minimap server allows you share your vision to others who already connected to t
 
 The minimap server will take the first player's agar.io server address as the condition. Other players who want to connect to the minimap server will be verified whether the agar.io server address matches. Connection  The connection will succeed if the address matched, otherwise fails. In other words, you and other players have to be in the same agar.io server, or else you cannot share your vision.
 
-#### Minimap Server
+### Minimap Server
 1. To build a server
    ```
    cd server
@@ -49,7 +49,7 @@ The minimap server will take the first player's agar.io server address as the co
 ```
    Now you can access your minimap server at `ws://<your ip address>:34343`
 
-#### Client
+### Client
 * Simply enter an address of a minimap server, and click `connect`.
   e.g. ws://127.0.0.1:34343
 

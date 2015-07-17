@@ -60,6 +60,7 @@ The minimap server will take the first player's agar.io server address as the co
 ![screenshot_1](http://i.imgur.com/XQuYiCO.png)
 ![screenshot_2](http://i.imgur.com/13PfSnM.png)
 ![screenshot_3](http://i.imgur.com/WtHla5q.png)
+![screenshot_4](http://i.imgur.com/Is9xYyX.png)
 
 ## Issues
 

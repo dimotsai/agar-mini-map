@@ -15,11 +15,14 @@ The user script managers will automatically load agar-mini-map for you.
 2. Install agar-mini-map
     1. Go to https://greasyfork.org/en/scripts/10286-agar-mini-map
     2. Click `Install this script`
+3. Alternatively, click [here][1] to install the script directly.
+
+
 
 ### Manually install for other browsers
 
 1. Simply open up JavaScript Console
-2. Enter the code in [agar-mini-map.user.js](https://raw.githubusercontent.com/dimotsai/agar-mini-map/master/agar-mini-map.user.js) into console
+2. Enter the code in [agar-mini-map.user.js][1] into console
 
 Note: If you are taking this approach, you might have to re-select server to make it work.
 
@@ -68,3 +71,5 @@ The minimap server will take the first player's agar.io server address as the co
 ## Related projects
 
 * [iamgyz/Agar-server-selection](https://github.com/iamgyz/Agar-server-selection)
+
+[1]: https://raw.githubusercontent.com/dimotsai/agar-mini-map/master/agar-mini-map.user.js

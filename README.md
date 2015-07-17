@@ -50,7 +50,7 @@ The minimap server will take the first player's agar.io server address as the co
 * Simply enter an address of a minimap server, and click `connect`.
   e.g. ws://127.0.0.1:34343
 
-![minimap_server](http://i.imgur.com/yTmET7a.png)
+![minimap_server](http://i.imgur.com/q0NwYo9.png)
 
 ## Screenshots
 

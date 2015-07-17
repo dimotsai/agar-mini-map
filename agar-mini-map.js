@@ -258,8 +258,7 @@
                 color: 'white',
                 fontSize: 15,
                 fontWeight: 800,
-                position: 'fixed',
-                padding: '0px 10px'
+                position: 'fixed'
             }).appendTo(document.body);
         }
 
@@ -271,11 +270,17 @@
                 color: '#666',
                 fontSize: 14,
                 position: 'fixed',
-                padding: '0px 10px',
-                fontWeight: 400
+                fontWeight: 400,
+                zIndex: 1000
             }).appendTo(document.body);
 
-            var container = $('<div>').hide();
+            var container = $('<div>')
+                .css({
+                    background: 'rgba(200, 200, 200, 0.58)',
+                    padding: 5,
+                    borderRadius: 5
+                })
+                .hide();
 
             for (var name in options) {
 
@@ -290,7 +295,7 @@
                 });
 
                 label.append(checkbox);
-                label.append(' ' + name);
+                label.append(' ' + camel2cap(name));
 
                 checkbox.click(function(options, name) { return function(evt) {
                     options[name] = evt.target.checked;
@@ -301,32 +306,59 @@
             }
 
             container.appendTo(window.mini_map_options);
+            var form = $('<div>')
+                .addClass('form-inline')
+                .css({
+                    opacity: 0.7,
+                    marginTop: 2
+                })
+                .appendTo(window.mini_map_options);
 
-            $('<a>')
-                .attr('href', '#')
+            var form_group = $('<div>')
+                .addClass('form-group')
+                .appendTo(form);
+
+            var setting_btn = $('<button>')
+                .addClass('btn')
                 .css({
                     float: 'right',
-                    fontWeight: 800
+                    fontWeight: 800,
+                    marginLeft: 2
                 })
-                .text('settings')
-                .click(function() {
+                .on('click', function() {
                     container.toggle();
+                    setting_btn.blur();
                     return false;
                 })
-                .appendTo(window.mini_map_options);
+                .append($('<i>').addClass('glyphicon glyphicon-cog'))
+                .appendTo(form_group);
+
+            var help_btn = $('<button>')
+                .addClass('btn')
+                .text('?')
+                .on('click', function(e) {
+                    window.open('https://github.com/dimotsai/agar-mini-map/#minimap-server');
+                    setting_btn.blur();
+                    return false;
+                })
+                .appendTo(form_group);
 
             var addressInput = $('<input>')
+                .css({
+                    marginLeft: 2
+                })
                 .attr('placeholder', 'ws://127.0.0.1:34343')
                 .attr('type', 'text')
+                .addClass('form-control')
                 .val('ws://127.0.0.1:34343')
-                .appendTo(window.mini_map_options);
+                .appendTo(form_group);
 
             var connect = function (evt) {
                 var address = addressInput.val();
 
                 if (/ws:\/\/[0-9]{1,3}(\.[0-9]{1,3}){3}(:[0-9]{1,5})?/.test(address))
                 {
-                    connectBtn.text('disconnect');
+                    connectBtn.text('Disconnect');
                     miniMapConnectToServer(address, function onOpen() {
                         miniMapSendRawData(msgpack.encode({
                             type: 0,
@@ -360,7 +392,7 @@
             };
 
             var disconnect = function() {
-                connectBtn.text('connect');
+                connectBtn.text('Connect');
                 connectBtn.off('click');
                 connectBtn.on('click', connect);
                 connectBtn.blur();
@@ -370,9 +402,13 @@
             };
 
             var connectBtn = $('<button>')
-                .text('connect')
+                .css({
+                     marginLeft: 2
+                })
+                .text('Connect')
                 .click(connect)
-                .appendTo(window.mini_map_options);
+                .addClass('btn')
+                .appendTo(form_group);
         }
 
         // minimap party
@@ -494,6 +530,14 @@
                 miniMapUpdatePos(this.nx, this.ny);
             }
         }
+    };
+
+    String.prototype.capitalize = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1);
+    };
+
+    function camel2cap(str) {
+        return str.replace(/([A-Z])/g, function(s){return ' ' + s.toLowerCase();}).capitalize();
     };
 
     // create a linked property from slave object

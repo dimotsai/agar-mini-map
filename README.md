@@ -19,7 +19,7 @@ The user script managers will automatically load agar-mini-map for you.
 ### Manually install for other browsers
 
 1. Simply open up JavaScript Console
-2. Enter the code in [agar-mini-map.js](https://raw.githubusercontent.com/dimotsai/agar-mini-map/master/agar-mini-map.js) into console
+2. Enter the code in [agar-mini-map.user.js](https://raw.githubusercontent.com/dimotsai/agar-mini-map/master/agar-mini-map.user.js) into console
 
 Note: If you are taking this approach, you might have to re-select server to make it work.
 

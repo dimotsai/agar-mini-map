@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         agar-mini-map
 // @namespace    http://github.com/dimotsai/
-// @version      0.41
+// @version      0.42
 // @description  This script will show a mini map and your location on agar.io
 // @author       dimotsai
 // @license      MIT
@@ -47,7 +47,13 @@ window.msgpack = this.msgpack;
     }
 
     function miniMapConnectToServer(address, onOpen, onClose) {
-        var ws = new window._WebSocket(address);
+        try {
+            var ws = new window._WebSocket(address);
+        } catch (ex) {
+            onClose();
+            console.error(ex);
+            return false;
+        }
         ws.binaryType = "arraybuffer";
 
         ws.onopen = function() {
@@ -357,37 +363,34 @@ window.msgpack = this.msgpack;
             var connect = function (evt) {
                 var address = addressInput.val();
 
-                if (/ws:\/\/[0-9]{1,3}(\.[0-9]{1,3}){3}(:[0-9]{1,5})?/.test(address))
-                {
-                    connectBtn.text('Disconnect');
-                    miniMapConnectToServer(address, function onOpen() {
+                connectBtn.text('Disconnect');
+                miniMapConnectToServer(address, function onOpen() {
+                    miniMapSendRawData(msgpack.pack({
+                        type: 0,
+                        data: player_name
+                    }));
+                    for (var i in current_cell_ids) {
                         miniMapSendRawData(msgpack.pack({
-                            type: 0,
-                            data: player_name
+                            type: 32,
+                            data: current_cell_ids[i]
                         }));
-                        for (var i in current_cell_ids) {
-                            miniMapSendRawData(msgpack.pack({
-                                type: 32,
-                                data: current_cell_ids[i]
-                            }));
-                        }
-                        miniMapSendRawData(msgpack.pack({
-                            type: 100,
-                            data: agar_server
-                        }));
-                        window.mini_map_party.show();
-                    }, function onClose() {
-                        players = [];
-                        id_players = [];
-                        window.mini_map_party.hide();
-                        disconnect();
-                    });
+                    }
+                    miniMapSendRawData(msgpack.pack({
+                        type: 100,
+                        data: agar_server
+                    }));
+                    window.mini_map_party.show();
+                }, function onClose() {
+                    players = [];
+                    id_players = [];
+                    window.mini_map_party.hide();
+                    disconnect();
+                });
 
-                    connectBtn.off('click');
-                    connectBtn.on('click', disconnect);
+                connectBtn.off('click');
+                connectBtn.on('click', disconnect);
 
-                    miniMapReset();
-                }
+                miniMapReset();
 
                 connectBtn.blur();
             };
@@ -397,7 +400,8 @@ window.msgpack = this.msgpack;
                 connectBtn.off('click');
                 connectBtn.on('click', connect);
                 connectBtn.blur();
-                map_server.close();
+                if (map_server)
+                    map_server.close();
 
                 miniMapReset();
             };

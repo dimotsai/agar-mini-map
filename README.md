@@ -22,7 +22,8 @@ The user script managers will automatically load agar-mini-map for you.
 ### Manually install for other browsers
 
 1. Simply open up JavaScript Console
-2. Enter the code in [agar-mini-map.user.js][1] into console
+2. Enter the code of required library [MessagePack](http://cdn.jsdelivr.net/msgpack/1.05/msgpack.js) into console first
+3. Then enter the code in [agar-mini-map.user.js][1] into console
 
 Note: If you are taking this approach, you might have to re-select server to make it work.
 

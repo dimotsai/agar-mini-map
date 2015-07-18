@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         agar-mini-map
 // @namespace    http://github.com/dimotsai/
-// @version      0.42
+// @version      0.43
 // @description  This script will show a mini map and your location on agar.io
 // @author       dimotsai
 // @license      MIT
@@ -804,5 +804,13 @@ window.msgpack = this.msgpack;
 
     $(window.document).ready(function() {
         miniMapInit();
+    });
+
+    $(window).load(function() {
+        var main_canvas = document.getElementById('canvas');
+        if (main_canvas && main_canvas.onmousemove) {
+            document.onmousemove = main_canvas.onmousemove;
+            main_canvas.onmousemove = null;
+        }
     });
 })();

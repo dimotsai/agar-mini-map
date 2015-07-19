@@ -103,6 +103,11 @@ wss.on('connection', function connection(ws) {
                 break;
             case Packet.TYPE_UPDATE_ADDRESS:
                 var original_server = player.server;
+                if (typeof packet.data !== "string") {
+                    console.warn('player', player.no + 1, ': invalid packet data');
+                    ws.close();
+                    break;
+                }
                 player.server = url.parse(packet.data).host;
                 console.log('player', player.no + 1, 'update address:', original_server , '->', player.server);
 

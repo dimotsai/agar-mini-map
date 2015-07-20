@@ -38,17 +38,35 @@ Minimap server allows you share your vision to others who already connected to t
 The minimap server will take the first player's agar.io server address as the condition. Other players who want to connect to the minimap server will be verified whether the agar.io server address matches. Connection  The connection will succeed if the address matched, otherwise fails. In other words, you and other players have to be in the same agar.io server, or else you cannot share your vision.
 
 ### Minimap Server
-1. To build a server
+
+#### For linux users
+
+1. Install required packages: nodejs(includes npm), build-essential
+
+2. To build a server
    ```
    cd server
    npm install && npm run build
 ```
 
-2. To host a server
+3. To host a server
    ```
    npm run start
 ```
-   Now you can access your minimap server at `ws://<your ip address>:34343`
+   Now you can access your minimap server at `ws://<hostname>:34343`
+
+#### For Windows users
+
+1. Install [nodejs](https://nodejs.org/download/)
+
+2. Download the latest [release](https://github.com/dimotsai/agar-mini-map/releases) and unzip it
+
+3. To host a server
+   ```
+   cd agar-mini-map-<version>-win-x64/server
+   npm run start
+```
+   Now you can access your minimap server at `ws://<hostname>:34343`
 
 ### Client
 * Simply enter an address of a minimap server, and click `connect`.

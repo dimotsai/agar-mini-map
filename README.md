@@ -1,4 +1,6 @@
 # [agar-mini-map](https://github.com/dimotsai/agar-mini-map)
+
+[![Join the chat at https://gitter.im/dimotsai/agar-mini-map](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dimotsai/agar-mini-map?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 A mini map which is able to show your location on http://agar.io/
 
 ## Installation

@@ -98,8 +98,10 @@ window.msgpack = this.msgpack;
                     break;
                 case 130:
                     if (agar_server != packet.data.url) {
+                        region_name = $("#region>option[value='"+packet.data.region+"']").text();
+                        gamemode_name = $("#gamemode>option[value='"+packet.data.gamemode+"']").text();
                         alert("game server mismatched\n\n" + "Your game server is:\n" + agar_server
-                            + "\n\nMini-map game server is:\n" + packet.data.url + "\n" + packet.data.region + " " + packet.data.gamemode);
+                            + "\n\nMini-map game server is:\n" + packet.data.url + "\n" + region_name + ", " + gamemode_name);
                     }
                     break;
             }

@@ -12,7 +12,7 @@ var wss = new WebSocketServer({ port: port });
 
 var players = [];
 var player_count = 0;
-var accepted_server_url = '';
+var accepted_server = [];
 
 var map = new MiniMap();
 
@@ -103,22 +103,17 @@ wss.on('connection', function connection(ws) {
                 break;
             case Packet.TYPE_UPDATE_ADDRESS:
                 var original_server = player.server;
-                if (typeof packet.data !== "string") {
-                    console.warn('player', player.no + 1, ': invalid packet data');
-                    ws.close();
-                    break;
-                }
-                player.server = url.parse(packet.data).host;
-                console.log('player', player.no + 1, 'update address:', original_server , '->', player.server);
+                player.server = packet.data;
+                console.log('player', player.no + 1, 'update address:', original_server.url , '->', player.server.url);
 
                 if (player_count == 1) {
-                    accepted_server_url = player.server;
+                    accepted_server = player.server;
                 } else {
-                    if (accepted_server_url != player.server) {
-                        console.warn('player\'s address mismatched:', player.server, '!=', accepted_server_url );
+                    if (accepted_server.url != player.server.url) {
+                        console.warn('player\'s address mismatched:', player.server.url, '!=', accepted_server.url );
                         wss.broadcast(msgpack.pack({
                             type: Packet.TYPE_SERVER_ADDRESS,
-                            data: {ip: accepted_server_url}
+                            data: accepted_server
                         }));
                         ws.close();
                     }

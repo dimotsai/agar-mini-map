@@ -97,11 +97,9 @@ window.msgpack = this.msgpack;
                     mini_map_party.trigger('update-list');
                     break;
                 case 130:
-                    var parser = document.createElement('a');
-                    parser.href = agar_server;
-                    if (parser.host != packet.data.ip) {
-                        alert("game server mismatched\n\n" + "Your game server is:\n" + parser.host
-                            + "\n\nMini-map game server is:\n" + packet.data.ip);
+                    if (agar_server != packet.data.url) {
+                        alert("game server mismatched\n\n" + "Your game server is:\n" + agar_server
+                            + "\n\nMini-map game server is:\n" + packet.data.url + "\n" + packet.data.region + " " + packet.data.gamemode);
                     }
                     break;
             }
@@ -384,7 +382,7 @@ window.msgpack = this.msgpack;
                     }
                     miniMapSendRawData(msgpack.pack({
                         type: 100,
-                        data: agar_server
+                        data: {url: agar_server, region: $('#region').val(), gamemode: $('#gamemode').val()}
                     }));
                     window.mini_map_party.show();
                 }, function onClose() {
@@ -784,7 +782,7 @@ window.msgpack = this.msgpack;
             agar_server = url;
             miniMapSendRawData(msgpack.pack({
                 type: 100,
-                data: url
+                data: {url: url, region: $('#region').val(), gamemode: $('#gamemode').val()}
             }));
             if (this.onopen)
                 return this.onopen.call(ws, event);

@@ -101,7 +101,7 @@ window.msgpack = this.msgpack;
                         region_name = $("#region>option[value='"+packet.data.region+"']").text();
                         gamemode_name = $("#gamemode>option[value='"+packet.data.gamemode+"']").text();
                         alert("game server mismatched\n\n" + "Your game server is:\n" + agar_server
-                            + "\n\nMini-map game server is:\n" + packet.data.url + "\n" + region_name + ", " + gamemode_name);
+                            + "\n\nMini-map game server is:\n" + packet.data.url + "\n" + region_name + ", " + gamemode_name + packet.data.party);
                     }
                     break;
             }
@@ -384,7 +384,7 @@ window.msgpack = this.msgpack;
                     }
                     miniMapSendRawData(msgpack.pack({
                         type: 100,
-                        data: {url: agar_server, region: $('#region').val(), gamemode: $('#gamemode').val()}
+                        data: {url: agar_server, region: $('#region').val(), gamemode: $('#gamemode').val(), party: location.hash}
                     }));
                     window.mini_map_party.show();
                 }, function onClose() {
@@ -784,7 +784,7 @@ window.msgpack = this.msgpack;
             agar_server = url;
             miniMapSendRawData(msgpack.pack({
                 type: 100,
-                data: {url: url, region: $('#region').val(), gamemode: $('#gamemode').val()}
+                data: {url: url, region: $('#region').val(), gamemode: $('#gamemode').val(), party: location.hash}
             }));
             if (this.onopen)
                 return this.onopen.call(ws, event);

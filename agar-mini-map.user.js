@@ -95,7 +95,14 @@ window.msgpack = this.msgpack;
                         }
                     }
                     mini_map_party.trigger('update-list');
-
+                    break;
+                case 130:
+                    var parser = document.createElement('a');
+                    parser.href = agar_server;
+                    if (parser.host != packet.data.ip) {
+                        alert("game server mismatched\n\n" + "Your game server is:\n" + parser.host
+                            + "\n\nMini-map game server is:\n" + packet.data.ip);
+                    }
                     break;
             }
         }

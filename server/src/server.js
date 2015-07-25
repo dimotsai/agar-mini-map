@@ -116,6 +116,10 @@ wss.on('connection', function connection(ws) {
                 } else {
                     if (accepted_server_url != player.server) {
                         console.warn('player\'s address mismatched:', player.server, '!=', accepted_server_url );
+                        wss.broadcast(msgpack.pack({
+                            type: Packet.TYPE_SERVER_ADDRESS,
+                            data: {ip: accepted_server_url}
+                        }));
                         ws.close();
                     }
                 }

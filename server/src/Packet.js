@@ -18,3 +18,4 @@ Packet.TYPE_UPDATE_ADDRESS = 100;
 // operations for client
 Packet.TYPE_UPDATE_MAP = 128;
 Packet.TYPE_UPDATE_PLAYERS = 129;
+Packet.TYPE_SERVER_ADDRESS = 130;

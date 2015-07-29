@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         agar-mini-map
 // @namespace    http://github.com/dimotsai/
-// @version      0.44
+// @version      0.45
 // @description  This script will show a mini map and your location on agar.io
 // @author       dimotsai
 // @license      MIT

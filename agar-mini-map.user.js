@@ -98,10 +98,22 @@ window.msgpack = this.msgpack;
                     break;
                 case 130:
                     if (agar_server != packet.data.url) {
-                        var region_name = $("#region>option[value='"+packet.data.region+"']").text();
-                        var gamemode_name = $("#gamemode>option[value='"+packet.data.gamemode+"']").text();
-                        alert("game server mismatched\n\n" + "Your game server is:\n" + agar_server
-                            + "\n\nMini-map game server is:\n" + packet.data.url + "\n" + region_name + ", " + gamemode_name + packet.data.party);
+                        var region_name = $('#region > option[value="' + packet.data.region + '"]').text();
+                        var gamemode_name = $('#gamemode > option[value="' + packet.data.gamemode + '"]').text();
+                        var title = 'Agar Server Mismatched';
+                        var content = ('You are now at: <strong>' + agar_server
+                            + '</strong><br>Your team members are all at: <strong>' + packet.data.url + ', ' + region_name + ':' + gamemode_name + packet.data.party
+                            + '</strong>.<br>The minimap server has disconnected automatically.');
+
+                        $('#mini-map-connect-btn').popover({
+                            placement: 'top',
+                            title: title,
+                            content: content,
+                            container: document.body,
+                            html: true
+                        }).popover('show');
+                    } else {
+                        $('#mini-map-content-btn').popover('hide');
                     }
                     break;
             }
@@ -414,6 +426,7 @@ window.msgpack = this.msgpack;
             };
 
             var connectBtn = $('<button>')
+                .attr('id', 'mini-map-connect-btn')
                 .css({
                      marginLeft: 2
                 })

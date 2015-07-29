@@ -20,7 +20,7 @@ class Player
 
         this.ids = [];
         this.cells = [];
-        this.server = '';
+        this.server = null;
 
         // only mutate for updateNodes
         this.shouldUpdate = true;

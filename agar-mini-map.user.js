@@ -105,7 +105,8 @@ window.msgpack = this.msgpack;
                             + '</strong><br>Your team members are all at: <strong>' + packet.data.url + ', ' + region_name + ':' + gamemode_name + packet.data.party
                             + '</strong>.<br>The minimap server has disconnected automatically.');
 
-                        $('#mini-map-connect-btn').popover({
+                        $('#mini-map-connect-btn').popover('destroy').popover({
+                            animation: false,
                             placement: 'top',
                             title: title,
                             content: content,
@@ -382,6 +383,7 @@ window.msgpack = this.msgpack;
             var connect = function (evt) {
                 var address = addressInput.val();
 
+                connectBtn.popover('destroy');
                 connectBtn.text('Disconnect');
                 miniMapConnectToServer(address, function onOpen() {
                     miniMapSendRawData(msgpack.pack({

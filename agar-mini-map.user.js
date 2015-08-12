@@ -168,6 +168,7 @@ window.msgpack = this.msgpack;
                 ctx.fillText(id_players[id] + 1, x, y);
             }
         };
+        miniMapDrawMiddleCross()
     }
 
     function miniMapDrawCross(x, y) {
@@ -181,6 +182,20 @@ window.msgpack = this.msgpack;
         ctx.lineTo(x * canvas.width, canvas.height);
         ctx.closePath();
         ctx.strokeStyle = '#FFFFFF';
+        ctx.stroke();
+    }
+
+    function miniMapDrawMiddleCross() {
+        var canvas = window.mini_map;
+        var ctx = canvas.getContext('2d');
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height/2);
+        ctx.lineTo(canvas.width, canvas.height/2);
+        ctx.moveTo(canvas.width/2, 0);
+        ctx.lineTo(canvas.width/2, canvas.height);
+        ctx.closePath();
+        ctx.strokeStyle = '#000000';
         ctx.stroke();
     }
 

@@ -20,7 +20,8 @@ window.msgpack = this.msgpack;
     var options = {
         enableMultiCells: true,
         enablePosition: true,
-        enableCross: true
+        enableCross: true,
+        enableAxes: false
     };
 
     // game states
@@ -168,7 +169,8 @@ window.msgpack = this.msgpack;
                 ctx.fillText(id_players[id] + 1, x, y);
             }
         };
-        miniMapDrawMiddleCross()
+        if (options.enableAxes)
+            miniMapDrawMiddleCross()
     }
 
     function miniMapDrawCross(x, y) {

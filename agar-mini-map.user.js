@@ -20,8 +20,8 @@ window.msgpack = this.msgpack;
     var options = {
         enableMultiCells: true,
         enablePosition: true,
-        enableCross: true,
-        enableAxes: false
+        enableAxes: false,
+        enableCross: true
     };
 
     // game states

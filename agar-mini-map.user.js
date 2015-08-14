@@ -20,7 +20,8 @@ window.msgpack = this.msgpack;
     var options = {
         enableMultiCells: true,
         enablePosition: true,
-        enableAxes: false,
+        enableAxes: true,
+        ViewRectangle: true,
         enableCross: true
     };
 
@@ -160,7 +161,13 @@ window.msgpack = this.msgpack;
 
             if (options.enableCross && -1 != current_cell_ids.indexOf(token.id))
                 miniMapDrawCross(token.x, token.y);
+            
+            if (options.enableAxes && -1 != current_cell_ids.indexOf(token.id))
+                miniMapDrawMiddleCross()
 
+			if (options.ViewRectangle && -1 != current_cell_ids.indexOf(token.id))
+				miniMapDrawRectangle(x, y, size); // needs to cell mass - dont know how
+			
             if (id_players[id] !== undefined) {
                 ctx.font = size * 2 + 'px Arial';
                 ctx.textAlign = 'center';
@@ -169,10 +176,8 @@ window.msgpack = this.msgpack;
                 ctx.fillText(id_players[id] + 1, x, y);
             }
         };
-        if (options.enableAxes)
-            miniMapDrawMiddleCross()
     }
-
+    
     function miniMapDrawCross(x, y) {
         var canvas = window.mini_map;
         var ctx = canvas.getContext('2d');
@@ -201,6 +206,18 @@ window.msgpack = this.msgpack;
         ctx.stroke();
     }
 
+    function miniMapDrawRectangle(x, y, size) {
+        var canvas = window.mini_map;
+        var ctx = canvas.getContext('2d');
+        var rectwidth=0.0364372469635628*size+41.6 // formula that works until 1000 mass
+        var recthight=0.0202429149797571*size+23.7 // dont know the real formula but this kinda works
+        ctx.beginPath();
+        ctx.rect(x-rectwidth/2, y-recthight/2, rectwidth, recthight);
+        ctx.closePath();
+        ctx.strokeStyle = '#000000';
+        ctx.stroke();
+    }
+	
     function miniMapCreateToken(id, color) {
         var mini_map_token = {
             id: id,
@@ -576,9 +593,10 @@ window.msgpack = this.msgpack;
             } else {
                 window.mini_map_pos.hide();
             }
+			
         }
     };
-
+	
     String.prototype.capitalize = function() {
         return this.charAt(0).toUpperCase() + this.slice(1);
     };

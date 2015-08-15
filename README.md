@@ -1,5 +1,7 @@
 # [agar-mini-map](https://github.com/dimotsai/agar-mini-map)
 
+This branch is currently under heavy development and is unstable. Please do not use it as your formal plugin.
+
 [![Join the chat at https://gitter.im/dimotsai/agar-mini-map](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dimotsai/agar-mini-map?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 A mini map which is able to show your location on http://agar.io/

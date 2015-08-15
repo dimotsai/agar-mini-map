@@ -158,9 +158,14 @@ window.msgpack = this.msgpack;
             ctx.fill();
 
             if (options.enableCross && -1 != current_cell_ids.indexOf(token.id))
-                miniMapDrawCross(token.x, token.y);
+                miniMapDrawCross(token.x, token.y, token.color);
 
             if (id_players[id] !== undefined) {
+				// Draw you party member's crosshair
+				if (options.enableCross) {
+                    miniMapDrawCross(token.x, token.y, token.color);
+                }
+				
                 ctx.font = size * 2 + 'px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -170,7 +175,7 @@ window.msgpack = this.msgpack;
         };
     }
 
-    function miniMapDrawCross(x, y) {
+    function miniMapDrawCross(x, y, color) {
         var canvas = window.mini_map;
         var ctx = canvas.getContext('2d');
         ctx.lineWidth = 0.5;
@@ -180,7 +185,7 @@ window.msgpack = this.msgpack;
         ctx.moveTo(x * canvas.width, 0);
         ctx.lineTo(x * canvas.width, canvas.height);
         ctx.closePath();
-        ctx.strokeStyle = '#FFFFFF';
+        ctx.strokeStyle = color || '#FFFFFF';
         ctx.stroke();
     }
 

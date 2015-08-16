@@ -20,7 +20,7 @@ window.msgpack = this.msgpack;
     var options = {
         enableMultiCells: true,
         enablePosition: true,
-        enableAxes: true,
+        enableAxes: false,
         enableCross: true
     };
 

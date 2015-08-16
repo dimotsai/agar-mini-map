@@ -20,6 +20,7 @@ window.msgpack = this.msgpack;
     var options = {
         enableMultiCells: true,
         enablePosition: true,
+        enableAxes: true,
         enableCross: true
     };
 
@@ -160,12 +161,15 @@ window.msgpack = this.msgpack;
             if (options.enableCross && -1 != current_cell_ids.indexOf(token.id))
                 miniMapDrawCross(token.x, token.y, token.color);
 
+            if (options.enableAxes && -1 != current_cell_ids.indexOf(token.id))
+                miniMapDrawMiddleCross()
+
             if (id_players[id] !== undefined) {
-				// Draw you party member's crosshair
-				if (options.enableCross) {
+                // Draw you party member's crosshair
+                if (options.enableCross) {
                     miniMapDrawCross(token.x, token.y, token.color);
                 }
-				
+
                 ctx.font = size * 2 + 'px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -186,6 +190,20 @@ window.msgpack = this.msgpack;
         ctx.lineTo(x * canvas.width, canvas.height);
         ctx.closePath();
         ctx.strokeStyle = color || '#FFFFFF';
+        ctx.stroke();
+    }
+
+    function miniMapDrawMiddleCross() {
+        var canvas = window.mini_map;
+        var ctx = canvas.getContext('2d');
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height/2);
+        ctx.lineTo(canvas.width, canvas.height/2);
+        ctx.moveTo(canvas.width/2, 0);
+        ctx.lineTo(canvas.width/2, canvas.height);
+        ctx.closePath();
+        ctx.strokeStyle = '#000000';
         ctx.stroke();
     }
 
@@ -564,6 +582,7 @@ window.msgpack = this.msgpack;
             } else {
                 window.mini_map_pos.hide();
             }
+
         }
     };
 

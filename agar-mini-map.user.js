@@ -120,6 +120,7 @@ function MiniMap () {
     this.options = {
         enableMultiCells: true,
         enablePosition: true,
+        enableAxes: false,
         enableCross: true
     };
 
@@ -278,11 +279,16 @@ MiniMap.prototype = {
                 this.drawCross(token.x, token.y, token.color);
             }
 
+            if (this.options.enableAxes && -1 != this.current_cell_ids.indexOf(token.id)) {
+                this.drawMiddleCross();
+            }
+
             if (this.id_players[id] !== undefined) {
                 // Draw you party member's crosshair
                 if (options.enableCross) {
                     miniMapDrawCross(token.x, token.y, token.color);
                 }
+
                 ctx.font = size * 2 + 'px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -303,6 +309,20 @@ MiniMap.prototype = {
         ctx.lineTo(x * canvas.width, canvas.height);
         ctx.closePath();
         ctx.strokeStyle = color || '#FFFFFF';
+        ctx.stroke();
+    },
+
+    drawMiddleCross: function () {
+        var canvas = this.ui.minimap;
+        var ctx = canvas.getContext('2d');
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height/2);
+        ctx.lineTo(canvas.width, canvas.height/2);
+        ctx.moveTo(canvas.width/2, 0);
+        ctx.lineTo(canvas.width/2, canvas.height);
+        ctx.closePath();
+        ctx.strokeStyle = '#000000';
         ctx.stroke();
     },
 

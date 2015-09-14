@@ -60,7 +60,7 @@ The minimap server will take the first player's agar.io server address as the co
 
 #### For Windows users
 
-1. Install [nodejs](https://nodejs.org/download/)
+1. Install [nodejs](https://nodejs.org/download/) and make sure that you download the right version (says 64-bit)
 
 2. Download the latest [release](https://github.com/dimotsai/agar-mini-map/releases) and unzip it
 

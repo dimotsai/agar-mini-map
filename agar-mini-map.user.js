@@ -625,6 +625,27 @@ window.msgpack = this.msgpack;
         var size = data.getUint16(c, true);
         c = c + 2;
 
+        function getName() {
+            for (var string = ""; ; ) {
+                var ch = data.getUint16(c, true);
+                c += 2;
+                if (0 == ch)
+                    break;
+                string += String.fromCharCode(ch)
+            }
+            return string;
+        }
+
+        function getSkin() {
+            for (var string = ""; ; ) {
+                var ch = data.getUint8(c++);
+                if (0 == ch)
+                    break;
+                string += String.fromCharCode(ch)
+            }
+            return string;
+        }
+
         // Nodes to be destroyed (killed)
         for (var e = 0; e < size; ++e) {
             var p = cells[data.getUint32(c, true)],
@@ -665,19 +686,14 @@ window.msgpack = this.msgpack;
                 m = !!(k & 1),
                 q = !!(k & 16);
 
-            k & 2 && (c += 4);
-            k & 4 && (c += 8);
-            k & 8 && (c += 16);
+            var skin = null;
+            var name = null;
 
-            for (var n, k = ""; ; ) {
-                n = data.getUint16(c, true);
-                c += 2;
-                if (0 == n)
-                    break;
-                k += String.fromCharCode(n)
-            }
+            k & 2 && (c += 4 + data.getUint32(c, true));
+            k & 4 && (skin = getSkin());
+            //k & 8 && (c += 16);
 
-            n = k;
+            name = getName();
             k = null;
 
             var updated = false;
@@ -690,7 +706,7 @@ window.msgpack = this.msgpack;
                    k.oSize = k.size,
                    k.color = h,
                    updated = true)
-                : (k = new Cell(d, p, f, g, h, n),
+                : (k = new Cell(d, p, f, g, h, name),
                    k.pX = p,
                    k.pY = f);
 
@@ -701,7 +717,8 @@ window.msgpack = this.msgpack;
             k.nSize = g;
             k.updateCode = b;
             k.updateTime = I;
-            n && k.setName(n);
+            skin && (k.skin = skin);
+            name && k.setName(name);
 
             // ignore food creation
             if (updated) {

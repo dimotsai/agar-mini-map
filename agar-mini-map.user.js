@@ -144,6 +144,8 @@ window.msgpack = this.msgpack;
             var x = token.x * canvas.width;
             var y = token.y * canvas.height;
             var size = token.size * canvas.width;
+            var myColor = null;
+            var isMyCell = false;
 
             ctx.beginPath();
             ctx.arc(
@@ -157,16 +159,24 @@ window.msgpack = this.msgpack;
             ctx.closePath();
             ctx.fillStyle = token.color;
             ctx.fill();
-
-            if (options.enableCross && -1 != current_cell_ids.indexOf(token.id))
-                miniMapDrawCross(token.x, token.y, token.color);
+            
+            if (window.darkThemeCheckBox.checked) {
+                myColor = "white";
+            } else {
+                myColor = "black";
+            }
+            
+            if (options.enableCross && -1 != current_cell_ids.indexOf(token.id)) {
+                miniMapDrawCross(token.x, token.y, myColor);
+                isMyCell = true;
+            }
 
             if (options.enableAxes && -1 != current_cell_ids.indexOf(token.id))
                 miniMapDrawMiddleCross()
 
             if (id_players[id] !== undefined) {
                 // Draw you party member's crosshair
-                if (options.enableCross) {
+                if (options.enableCross && !isMyCell) {
                     miniMapDrawCross(token.x, token.y, token.color);
                 }
 
@@ -312,6 +322,9 @@ window.msgpack = this.msgpack;
             }).appendTo(document.body);
         }
 
+        // dark theme checkbox
+        window.darkThemeCheckBox = document.getElementById('options').children[4].children[0];
+        
         // minimap options
         if ($('#mini-map-options').length === 0) {
             window.mini_map_options = $('<div>').attr('id', 'mini-map-options').css({

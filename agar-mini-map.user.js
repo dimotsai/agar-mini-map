@@ -40,6 +40,7 @@ window.msgpack = this.msgpack;
         length_x = 14000,
         length_y = 14000;
     var render_timer = null;
+    var last_server = null;
 
     function miniMapSendRawData(data) {
         if (map_server !== null && map_server.readyState === window._WebSocket.OPEN) {
@@ -51,6 +52,7 @@ window.msgpack = this.msgpack;
     function miniMapConnectToServer(address, onOpen, onClose) {
         try {
             var ws = new window._WebSocket(address);
+            document.cookie = "agar-mini-map-server=" + address;
         } catch (ex) {
             onClose();
             console.error(ex);
@@ -285,6 +287,18 @@ window.msgpack = this.msgpack;
         length_x = 14000;
         length_y = 14000;
 
+        // get last used map server address from cookie if existent
+        var cookies = document.cookie.replace(/ /g,'').split(";");
+        for (var i=0; i<cookies.length; i++){ 
+            var c_tuple= cookies[i].split("=");
+            if (c_tuple[0] == "agar-mini-map-server"){
+                last_server = c_tuple[1];
+            }
+        }
+        if (last_server == null) {
+            last_server = "ws://127.0.0.1:34343";
+        }
+        
         // minimap dom
         if ($('#mini-map-wrapper').length === 0) {
             var wrapper = $('<div>').attr('id', 'mini-map-wrapper').css({
@@ -418,7 +432,7 @@ window.msgpack = this.msgpack;
                 .attr('placeholder', 'ws://127.0.0.1:34343')
                 .attr('type', 'text')
                 .addClass('form-control')
-                .val('ws://127.0.0.1:34343')
+                .val(last_server)
                 .appendTo(form_group);
 
             var connect = function (evt) {

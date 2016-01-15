@@ -21,7 +21,8 @@ window.msgpack = this.msgpack;
         enableMultiCells: true,
         enablePosition: true,
         enableAxes: false,
-        enableCross: true
+        enableCross: true,
+        enableUniqueCellColor: true
     };
 
     // game states
@@ -160,10 +161,14 @@ window.msgpack = this.msgpack;
             ctx.fillStyle = token.color;
             ctx.fill();
             
-            if (window.darkThemeCheckBox.checked) {
-                myColor = "white";
+            if (options.enableUniqueCellColor) {
+                if (window.darkThemeCheckBox.checked) {
+                    myColor = "white";
+                } else {
+                    myColor = "black";
+                }
             } else {
-                myColor = "black";
+                myColor = token.color;
             }
             
             if (options.enableCross && -1 != current_cell_ids.indexOf(token.id)) {

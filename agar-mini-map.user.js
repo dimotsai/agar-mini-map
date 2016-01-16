@@ -149,19 +149,6 @@ window.msgpack = this.msgpack;
             var size = token.size * canvas.width;
             var myColor = null;
             var isMyCell = false;
-
-            ctx.beginPath();
-            ctx.arc(
-                x,
-                y,
-                size,
-                0,
-                2 * Math.PI,
-                false
-            );
-            ctx.closePath();
-            ctx.fillStyle = token.color;
-            ctx.fill();
             
             if (options.enableUniqueCellColor) {
                 if (window.darkThemeCheckBox.checked) {
@@ -193,6 +180,23 @@ window.msgpack = this.msgpack;
                 ctx.fillStyle = 'white';
                 ctx.fillText(id_players[id] + 1, x, y);
             }
+            
+            ctx.beginPath();
+            ctx.arc(
+                x,
+                y,
+                size,
+                0,
+                2 * Math.PI,
+                false
+            );
+            ctx.closePath();
+            if (isMyCell) {
+                ctx.fillStyle = myColor;
+            } else {
+                ctx.fillStyle = token.color;
+            }
+            ctx.fill();
         };
     }
 

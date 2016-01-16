@@ -869,10 +869,18 @@ window.msgpack = this.msgpack;
 
         ws.onopen = function(event) {
             miniMapInit();
-            agar_server = url;
+            
+            var real_url = null;
+            if (url.split("://")[0] == "wss") {
+                real_url = agar_server;
+            } else {
+                real_url = url;
+            }
+            agar_server = real_url;
+
             miniMapSendRawData(msgpack.pack({
                 type: 100,
-                data: {url: url, region: $('#region').val(), gamemode: $('#gamemode').val(), party: location.hash}
+                data: {url: real_url, region: $('#region').val(), gamemode: $('#gamemode').val(), party: location.hash}
             }));
             if (this.onopen)
                 return this.onopen.call(ws, event);

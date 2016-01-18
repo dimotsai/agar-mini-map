@@ -21,7 +21,8 @@ window.msgpack = this.msgpack;
         enableMultiCells: true,
         enablePosition: true,
         enableAxes: false,
-        enableCross: true
+        enableCross: true,
+        enableUniqueCellColor: true
     };
 
     // game states
@@ -39,6 +40,7 @@ window.msgpack = this.msgpack;
         length_x = 14000,
         length_y = 14000;
     var render_timer = null;
+    var last_server = null;
 
     function miniMapSendRawData(data) {
         if (map_server !== null && map_server.readyState === window._WebSocket.OPEN) {
@@ -50,6 +52,7 @@ window.msgpack = this.msgpack;
     function miniMapConnectToServer(address, onOpen, onClose) {
         try {
             var ws = new window._WebSocket(address);
+            document.cookie = "agar-mini-map-server=" + address;
         } catch (ex) {
             onClose();
             console.error(ex);
@@ -144,7 +147,40 @@ window.msgpack = this.msgpack;
             var x = token.x * canvas.width;
             var y = token.y * canvas.height;
             var size = token.size * canvas.width;
+            var myColor = null;
+            var isMyCell = false;
+            
+            if (options.enableUniqueCellColor) {
+                if (window.darkThemeCheckBox.checked) {
+                    myColor = "white";
+                } else {
+                    myColor = "black";
+                }
+            } else {
+                myColor = token.color;
+            }
+            
+            if (options.enableCross && -1 != current_cell_ids.indexOf(token.id)) {
+                miniMapDrawCross(token.x, token.y, myColor);
+                isMyCell = true;
+            }
 
+            if (options.enableAxes && -1 != current_cell_ids.indexOf(token.id))
+                miniMapDrawMiddleCross()
+
+            if (id_players[id] !== undefined) {
+                // Draw you party member's crosshair
+                if (options.enableCross && !isMyCell) {
+                    miniMapDrawCross(token.x, token.y, token.color);
+                }
+
+                ctx.font = size * 2 + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = 'white';
+                ctx.fillText(id_players[id] + 1, x, y);
+            }
+            
             ctx.beginPath();
             ctx.arc(
                 x,
@@ -155,27 +191,12 @@ window.msgpack = this.msgpack;
                 false
             );
             ctx.closePath();
-            ctx.fillStyle = token.color;
-            ctx.fill();
-
-            if (options.enableCross && -1 != current_cell_ids.indexOf(token.id))
-                miniMapDrawCross(token.x, token.y, token.color);
-
-            if (options.enableAxes && -1 != current_cell_ids.indexOf(token.id))
-                miniMapDrawMiddleCross()
-
-            if (id_players[id] !== undefined) {
-                // Draw you party member's crosshair
-                if (options.enableCross) {
-                    miniMapDrawCross(token.x, token.y, token.color);
-                }
-
-                ctx.font = size * 2 + 'px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = 'white';
-                ctx.fillText(id_players[id] + 1, x, y);
+            if (isMyCell) {
+                ctx.fillStyle = myColor;
+            } else {
+                ctx.fillStyle = token.color;
             }
+            ctx.fill();
         };
     }
 
@@ -270,6 +291,18 @@ window.msgpack = this.msgpack;
         length_x = 14000;
         length_y = 14000;
 
+        // get last used map server address from cookie if existent
+        var cookies = document.cookie.replace(/ /g,'').split(";");
+        for (var i=0; i<cookies.length; i++){ 
+            var c_tuple= cookies[i].split("=");
+            if (c_tuple[0] == "agar-mini-map-server"){
+                last_server = c_tuple[1];
+            }
+        }
+        if (last_server == null) {
+            last_server = "ws://127.0.0.1:34343";
+        }
+        
         // minimap dom
         if ($('#mini-map-wrapper').length === 0) {
             var wrapper = $('<div>').attr('id', 'mini-map-wrapper').css({
@@ -312,6 +345,9 @@ window.msgpack = this.msgpack;
             }).appendTo(document.body);
         }
 
+        // dark theme checkbox
+        window.darkThemeCheckBox = document.getElementById('options').children[4].children[0];
+        
         // minimap options
         if ($('#mini-map-options').length === 0) {
             window.mini_map_options = $('<div>').attr('id', 'mini-map-options').css({
@@ -400,7 +436,7 @@ window.msgpack = this.msgpack;
                 .attr('placeholder', 'ws://127.0.0.1:34343')
                 .attr('type', 'text')
                 .addClass('form-control')
-                .val('ws://127.0.0.1:34343')
+                .val(last_server)
                 .appendTo(form_group);
 
             var connect = function (evt) {
@@ -837,10 +873,18 @@ window.msgpack = this.msgpack;
 
         ws.onopen = function(event) {
             miniMapInit();
-            agar_server = url;
+            
+            var real_url = null;
+            if (url.split("://")[0] == "wss") {
+                real_url = agar_server;
+            } else {
+                real_url = url;
+            }
+            agar_server = real_url;
+
             miniMapSendRawData(msgpack.pack({
                 type: 100,
-                data: {url: url, region: $('#region').val(), gamemode: $('#gamemode').val(), party: location.hash}
+                data: {url: real_url, region: $('#region').val(), gamemode: $('#gamemode').val(), party: location.hash}
             }));
             if (this.onopen)
                 return this.onopen.call(ws, event);

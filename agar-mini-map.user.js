@@ -149,7 +149,7 @@ window.msgpack = this.msgpack;
             var size = token.size * canvas.width;
             var myColor = null;
             var isMyCell = false;
-            
+
             if (options.enableUniqueCellColor) {
                 if (window.darkThemeCheckBox.checked) {
                     myColor = "white";
@@ -159,7 +159,7 @@ window.msgpack = this.msgpack;
             } else {
                 myColor = token.color;
             }
-            
+
             if (options.enableCross && -1 != current_cell_ids.indexOf(token.id)) {
                 miniMapDrawCross(token.x, token.y, myColor);
                 isMyCell = true;
@@ -180,7 +180,7 @@ window.msgpack = this.msgpack;
                 ctx.fillStyle = 'white';
                 ctx.fillText(id_players[id] + 1, x, y);
             }
-            
+
             ctx.beginPath();
             ctx.arc(
                 x,
@@ -293,7 +293,7 @@ window.msgpack = this.msgpack;
 
         // get last used map server address from cookie if existent
         var cookies = document.cookie.replace(/ /g,'').split(";");
-        for (var i=0; i<cookies.length; i++){ 
+        for (var i=0; i<cookies.length; i++){
             var c_tuple= cookies[i].split("=");
             if (c_tuple[0] == "agar-mini-map-server"){
                 last_server = c_tuple[1];
@@ -302,7 +302,7 @@ window.msgpack = this.msgpack;
         if (last_server == null) {
             last_server = "ws://127.0.0.1:34343";
         }
-        
+
         // minimap dom
         if ($('#mini-map-wrapper').length === 0) {
             var wrapper = $('<div>').attr('id', 'mini-map-wrapper').css({
@@ -346,8 +346,8 @@ window.msgpack = this.msgpack;
         }
 
         // dark theme checkbox
-        window.darkThemeCheckBox = document.getElementById('options').children[4].children[0];
-        
+        window.darkThemeCheckBox = $('[data-itr=option_dark_theme]').parent().children('input')[0];
+
         // minimap options
         if ($('#mini-map-options').length === 0) {
             window.mini_map_options = $('<div>').attr('id', 'mini-map-options').css({
@@ -873,7 +873,7 @@ window.msgpack = this.msgpack;
 
         ws.onopen = function(event) {
             miniMapInit();
-            
+
             var real_url = null;
             if (url.split("://")[0] == "wss") {
                 real_url = agar_server;
